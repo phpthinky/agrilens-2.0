@@ -94,7 +94,7 @@
                     <a href="{{ route('admin.users') }}" class="btn btn-outline-primary">
                         <i class="fas fa-users"></i> Manage Users
                     </a>
-                    <a href="{{ route('samples.create') }}" class="btn btn-outline-success">
+                    <a href="{{ route('farms.index') }}" class="btn btn-outline-success">
                         <i class="fas fa-flask"></i> New Soil Analysis
                     </a>
                     <a href="{{ route('samples.index') }}" class="btn btn-outline-info">

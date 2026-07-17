@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\AnalysisController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SampleController;
 use App\Http\Controllers\ColorReadingController;
@@ -53,8 +54,6 @@ Route::middleware('auth')->group(function () {
 
     // Soil samples
     Route::get('/samples',              [SampleController::class, 'index'])->name('samples.index');
-    Route::get('/samples/create',       [SampleController::class, 'create'])->name('samples.create');
-    Route::post('/samples',             [SampleController::class, 'store'])->name('samples.store');
     Route::get('/samples/{sample}',        [SampleController::class, 'show'])->name('samples.show');
     Route::get('/samples/{sample}/report', [SampleController::class, 'report'])->name('samples.report');
     Route::get('/samples/{sample}/pdf',    [SampleController::class, 'pdf'])->name('samples.pdf');
@@ -104,6 +103,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/farms-statistics',    [FarmController::class, 'getStatistics'])->name('api.farms-statistics');
     Route::get('/api/farms/all-polygons',  [FarmController::class, 'getAllFarmPolygons'])->name('api.farms.all-polygons');
     Route::post('/api/farms/validate-polygon', [FarmController::class, 'validatePolygonOverlap'])->name('api.farms.validate-polygon');
+
+    // Create Analysis (Manual / Colorimetric / Digital Probe), started from a Farm
+    Route::get('/farms/{farm}/analyses/create',        [AnalysisController::class, 'chooseType'])->name('analyses.choose');
+    Route::get('/farms/{farm}/analyses/create/manual',  [AnalysisController::class, 'createManual'])->name('analyses.create.manual');
+    Route::get('/farms/{farm}/analyses/create/probe',   [AnalysisController::class, 'createProbe'])->name('analyses.create.probe');
+    Route::post('/farms/{farm}/analyses',               [AnalysisController::class, 'store'])->name('analyses.store');
+    Route::post('/farms/{farm}/analyses/probe/confirm', [AnalysisController::class, 'storeProbe'])->name('analyses.store.probe');
 
     // Export
     Route::get('/export',                          [ExportController::class, 'export'])->name('export');

@@ -28,10 +28,16 @@ class MigrateLegacyFarmers extends Command
         }
 
         $dryRun = $this->option('dry-run');
-        $legacyFarmers = DB::table('legacy_farmers')->get();
+        $alreadyMigrated = Farmer::where('notes', 'like', '%[legacy_farmer_id:%')
+            ->pluck('notes')
+            ->map(fn ($n) => (int) (string) str($n)->between('[legacy_farmer_id:', ']'))
+            ->all();
+
+        $legacyFarmers = DB::table('legacy_farmers')->whereNotIn('id', $alreadyMigrated ?: [0])->get();
 
         if ($legacyFarmers->isEmpty()) {
-            $this->info('No legacy_farmers rows to migrate.');
+            $this->info('No legacy_farmers rows left to migrate (already migrated, or none exist).');
+            return self::SUCCESS;
         }
 
         $idMap = [];
@@ -53,9 +59,8 @@ class MigrateLegacyFarmers extends Command
                     'address' => $legacy->address ?: 'Unknown',
                     'farmer_type' => 'Owner',
                     'is_active' => true,
-                    'notes' => $legacy->farm_location
-                        ? "Migrated from legacy farmer record. Original farm_location: {$legacy->farm_location}"
-                        : 'Migrated from legacy farmer record.',
+                    'notes' => "[legacy_farmer_id:{$legacy->id}] Migrated from legacy farmer record."
+                        . ($legacy->farm_location ? " Original farm_location: {$legacy->farm_location}" : ''),
                 ]);
 
                 $idMap[$legacy->id] = $farmer->id;
@@ -77,19 +82,21 @@ class MigrateLegacyFarmers extends Command
             if ($orphaned > 0) {
                 throw new \RuntimeException("{$orphaned} soil_samples row(s) still reference an unmapped farmer_id — aborting before adding the FK constraint.");
             }
-
-            try {
-                Schema::table('soil_samples', function ($table) {
-                    $table->foreign('farmer_id')->references('id')->on('farmers')->nullOnDelete();
-                });
-            } catch (\Illuminate\Database\QueryException $e) {
-                // Constraint already exists (safe to ignore if this command is re-run).
-            }
         });
 
         if ($dryRun) {
             $this->info("Dry run complete. Would migrate {$legacyFarmers->count()} farmer(s).");
             return self::SUCCESS;
+        }
+
+        // DDL (ALTER TABLE) auto-commits on MySQL, so it must run outside the
+        // DML transaction above rather than as its final step.
+        try {
+            Schema::table('soil_samples', function ($table) {
+                $table->foreign('farmer_id')->references('id')->on('farmers')->nullOnDelete();
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Constraint already exists (safe to ignore if this command is re-run).
         }
 
         $this->info('Migrated ' . count($idMap) . ' farmer(s). soil_samples.farmer_id remapped and FK restored.');

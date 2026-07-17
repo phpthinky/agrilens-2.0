@@ -11,12 +11,13 @@ use Illuminate\Support\Facades\File;
 class SoilSample extends Model
 {
     protected $fillable = [
-        'user_id', 'farmer_id', 'sample_name', 'location', 'sample_date',
+        'user_id', 'farmer_id', 'farm_id', 'sample_name', 'location', 'sample_date',
         'farmer_name', 'address', 'date_tested', 'color_hex',
         'ph_color_hex', 'nitrogen_color_hex', 'phosphorus_color_hex', 'potassium_color_hex',
         'ph_level', 'nitrogen_level', 'phosphorus_level', 'potassium_level',
         'fertility_score', 'ai_recommendation', 'gemini_crop_recommendation', 'recommended_crop',
         'tests_completed', 'analyzed_at',
+        'analysis_type', 'soil_type', 'probe_id', 'probe_raw_payload',
     ];
 
     protected function casts(): array
@@ -29,6 +30,7 @@ class SoilSample extends Model
             'nitrogen_level'   => 'float',
             'phosphorus_level' => 'float',
             'potassium_level'  => 'float',
+            'probe_raw_payload' => 'array',
         ];
     }
 
@@ -49,6 +51,26 @@ class SoilSample extends Model
     public function farmer(): BelongsTo
     {
         return $this->belongsTo(Farmer::class);
+    }
+
+    public function farm(): BelongsTo
+    {
+        return $this->belongsTo(Farm::class);
+    }
+
+    public function scopeManual($query)
+    {
+        return $query->where('analysis_type', 'manual');
+    }
+
+    public function scopeColorimetric($query)
+    {
+        return $query->where('analysis_type', 'colorimetric');
+    }
+
+    public function scopeProbe($query)
+    {
+        return $query->where('analysis_type', 'probe');
     }
 
     public function phTest(): HasOne

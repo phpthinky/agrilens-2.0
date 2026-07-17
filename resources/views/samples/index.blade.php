@@ -8,8 +8,8 @@
         <p class="lead text-muted">{{ auth()->user()->isAdmin() ? 'All system samples' : 'Your submitted soil samples' }}</p>
     </div>
     <div class="col-md-4 text-end">
-        <a href="{{ route('samples.create') }}" class="btn btn-success me-2">
-            <i class="fas fa-plus-circle me-1"></i> New Sample
+        <a href="{{ route('farms.index') }}" class="btn btn-success me-2">
+            <i class="fas fa-plus-circle me-1"></i> New Analysis
         </a>
         @if(auth()->user()->isAdmin())
         <a href="{{ route('export') }}" class="btn btn-outline-success">
@@ -25,8 +25,8 @@
         <div class="text-center py-5">
             <i class="fas fa-vial fa-3x text-muted mb-3"></i>
             <p class="text-muted">No soil samples yet.</p>
-            <a href="{{ route('samples.create') }}" class="btn btn-success">
-                <i class="fas fa-plus-circle"></i> Add Your First Sample
+            <a href="{{ route('farms.index') }}" class="btn btn-success">
+                <i class="fas fa-plus-circle"></i> Get Started — Choose a Farm
             </a>
         </div>
         @else

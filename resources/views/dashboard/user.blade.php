@@ -86,7 +86,7 @@
                     </table>
                 </div>
                 @else
-                <p>No soil samples found. <a href="{{ route('samples.create') }}">Analyze your first sample</a>.</p>
+                <p>No soil samples found. <a href="{{ route('farms.index') }}">Analyze your first sample</a>.</p>
                 @endif
             </div>
         </div>
@@ -96,7 +96,7 @@
             <div class="card-header"><h5>Quick Actions</h5></div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ route('samples.create') }}" class="btn btn-success btn-lg">
+                    <a href="{{ route('farms.index') }}" class="btn btn-success btn-lg">
                         <i class="fas fa-plus-circle"></i> New Soil Analysis
                     </a>
                     <a href="{{ route('samples.index') }}" class="btn btn-outline-primary">

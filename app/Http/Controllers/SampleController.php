@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Crop;
 use App\Models\CropFertilizerSchedule;
-use App\Models\Farmer;
 use App\Models\SoilSample;
 use App\Services\ColorScienceService;
 use App\Services\FertilizerService;
@@ -36,71 +35,12 @@ class SampleController extends Controller
         return view('samples.index', compact('samples'));
     }
 
-    // Show create form
-    public function create()
+    public function show(SoilSample $sample, FertilizerScheduleService $scheduleService)
     {
-         if (!Auth::user()->isAdmin())
-            {
-                $limit = 5000;
-                $samples = Auth::user()->soilSamples()->count();
-                if($samples >= $limit) {
-                    return redirect()->route('samples.index')
-                ->with('error', 'Maximum limit of '.$limit.' samples reached. Please settle the unpaid modification fee to continue using the system.');
-                }
-            }
-        // ── END SAMPLE LIMIT ──────────────────────────────────────────────────────────────────
-
-        $farmers = Farmer::orderBy('last_name')->orderBy('first_name')->get();
-
-        return view('samples.create', compact('farmers'));
-    }
-
-    // Store new sample
-    public function store(Request $request)
-    {
-        // ── SAMPLE LIMIT ── comment out the block below once the modification fee is settled ──
-        if (!Auth::user()->isAdmin())
-            {
-                $limit = 5000;
-                $samples = Auth::user()->soilSamples()->count();
-                if($samples >= $limit) {
-                    return redirect()->route('samples.index')
-                ->with('error', 'Maximum limit of '.$limit.' samples reached. Please settle the unpaid modification fee to continue using the system.');
-                }
-            }
-        // ── END SAMPLE LIMIT ──────────────────────────────────────────────────────────────────
-
-        $request->validate([
-            'sample_name' => 'required|string|max:150',
-            'farmer_id'   => 'nullable|integer|exists:farmers,id',
-            'farmer_name' => 'required|string|max:150',
-            'address'     => 'required|string|max:255',
-            'sample_date' => 'required|date|before_or_equal:today',
-            'date_tested' => 'required|date|before_or_equal:today|after_or_equal:sample_date',
-            'location'    => 'nullable|string|max:200',
-        ]);
-
-        $sample = Auth::user()->soilSamples()->create([
-            'farmer_id'   => $request->farmer_id ?: null,
-            'sample_name' => $request->sample_name,
-            'farmer_name' => $request->farmer_name,
-            'address'     => $request->address,
-            'sample_date' => $request->sample_date,
-            'date_tested' => $request->date_tested,
-            'location'    => $request->location,
-            'color_hex'   => '#8B4513',
-        ]);
-
-        return redirect()->route('samples.show', $sample)
-            ->with('success', 'Soil sample added successfully! Ready for webcam analysis.');
-    }
-public function show(SoilSample $sample, 
-    FertilizerScheduleService $scheduleService)
-{
-    $user = Auth::user();
-    if (!$user->isAdmin() && $sample->user_id !== $user->id) {
-        abort(403);
-    }
+        $user = Auth::user();
+        if (!$user->isAdmin() && $sample->user_id !== $user->id) {
+            abort(403);
+        }
 
     // Auto-compute when all 4 averaged colors are present and not yet analyzed
     if ($sample->allAveraged() && !$sample->isAnalyzed()) {

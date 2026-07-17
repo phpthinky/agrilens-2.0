@@ -201,8 +201,8 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('samples.create') }}">
-                                        <i class="fa fa-plus-circle me-1"></i>New Sample
+                                    <a class="dropdown-item" href="{{ route('farms.index') }}">
+                                        <i class="fa fa-plus-circle me-1"></i>New Analysis
                                     </a>
                                 </li>
                             </ul>
@@ -378,9 +378,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('samples.create') ? 'active' : '' }}"
-                       href="{{ route('samples.create') }}">
-                        <i class="fa fa-plus-circle"></i> New Sample
+                    <a class="nav-link {{ request()->routeIs('analyses.*') ? 'active' : '' }}"
+                       href="{{ route('farms.index') }}">
+                        <i class="fa fa-plus-circle"></i> New Analysis
                     </a>
                 </li>
 
