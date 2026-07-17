@@ -6,6 +6,7 @@ use App\Models\Barangay;
 use App\Models\Farm;
 use App\Models\Farmer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FarmController extends Controller
 {
@@ -36,7 +37,7 @@ class FarmController extends Controller
 
     public function index(Request $request)
     {
-        $query = Farm::with(['farmer', 'locationBarangay']);
+        $query = Auth::user()->getAccessibleFarms()->with(['farmer', 'locationBarangay']);
 
         if ($request->filled('search')) {
             $query->search($request->search);
@@ -107,12 +108,14 @@ class FarmController extends Controller
 
     public function show(Farm $farm)
     {
+        $this->authorise($farm);
         $farm->load(['farmer.barangay', 'locationBarangay', 'soilSamples' => fn ($q) => $q->latest('sample_date')]);
         return view('farms.show', compact('farm'));
     }
 
     public function edit(Farm $farm)
     {
+        $this->authorise($farm);
         $farmers = Farmer::active()->with('barangay')->orderBy('last_name')->get();
         $barangays = Barangay::active()->orderBy('name')->get();
 
@@ -121,6 +124,7 @@ class FarmController extends Controller
 
     public function update(Request $request, Farm $farm)
     {
+        $this->authorise($farm);
         $validated = $request->validate($this->rules());
         $validated['is_active'] = $request->boolean('is_active', true);
 
@@ -140,6 +144,7 @@ class FarmController extends Controller
 
     public function destroy(Farm $farm)
     {
+        $this->authorise($farm);
         $farmName = $farm->farm_name;
         $farmerName = $farm->farmer->full_name;
 
@@ -147,6 +152,13 @@ class FarmController extends Controller
 
         return redirect()->route('farms.index')
             ->with('success', "Farm '{$farmName}' owned by {$farmerName} has been deleted successfully.");
+    }
+
+    private function authorise(Farm $farm): void
+    {
+        if (!Auth::user()->getAccessibleFarms()->whereKey($farm->id)->exists()) {
+            abort(403);
+        }
     }
 
     // ── AJAX / API endpoints for the map ────────────────────────────

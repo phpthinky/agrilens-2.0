@@ -52,6 +52,17 @@
                         <label class="form-label">Password {{ $editUser ? '(leave blank to keep current)' : '*' }}</label>
                         <input type="password" class="form-control" name="password" {{ !$editUser ? 'required' : '' }} minlength="6">
                     </div>
+                    @if($editUser)
+                    <div class="mb-3">
+                        <label class="form-label">Assigned Barangays <small class="text-muted">(territory — ignored for admins)</small></label>
+                        <select name="barangay_ids[]" class="form-select" multiple size="5">
+                            @foreach($barangays as $b)
+                                <option value="{{ $b->id }}" {{ in_array($b->id, $assignedBarangayIds) ? 'selected' : '' }}>{{ $b->name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="form-text">Hold Ctrl/Cmd to select multiple. Determines which farmers/farms this user can see.</div>
+                    </div>
+                    @endif
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn {{ $editUser ? 'btn-primary' : 'btn-success' }}">
                             {{ $editUser ? 'Update User' : 'Add User' }}

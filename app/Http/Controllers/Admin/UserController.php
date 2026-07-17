@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Barangay;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,12 +15,15 @@ class UserController extends Controller
     {
         $users    = User::latest()->get();
         $editUser = null;
+        $assignedBarangayIds = [];
+        $barangays = Barangay::active()->orderBy('name')->get();
 
         if (request('edit_id')) {
             $editUser = User::findOrFail(request('edit_id'));
+            $assignedBarangayIds = $editUser->assignedBarangays()->pluck('barangays.id')->all();
         }
 
-        return view('admin.users', compact('users', 'editUser'));
+        return view('admin.users', compact('users', 'editUser', 'barangays', 'assignedBarangayIds'));
     }
 
     public function store(Request $request)
@@ -60,6 +64,7 @@ class UserController extends Controller
         }
 
         $user->update($data);
+        $user->assignedBarangays()->sync($request->input('barangay_ids', []));
 
         return redirect()->route('admin.users')->with('success', 'User updated successfully!');
     }

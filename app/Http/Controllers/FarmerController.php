@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Barangay;
 use App\Models\Farmer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FarmerController extends Controller
 {
@@ -34,7 +35,7 @@ class FarmerController extends Controller
 
     public function index(Request $request)
     {
-        $query = Farmer::with('barangay');
+        $query = Auth::user()->getAccessibleFarmers()->with('barangay');
 
         if ($request->filled('search')) {
             $query->search($request->search);
@@ -78,18 +79,22 @@ class FarmerController extends Controller
 
     public function show(Farmer $farmer)
     {
+        $this->authorise($farmer);
         $farmer->load(['barangay', 'farms']);
         return view('farmers.show', compact('farmer'));
     }
 
     public function edit(Farmer $farmer)
     {
+        $this->authorise($farmer);
         $barangays = Barangay::active()->orderBy('name')->get();
         return view('farmers.edit', compact('farmer', 'barangays'));
     }
 
     public function update(Request $request, Farmer $farmer)
     {
+        $this->authorise($farmer);
+
         $validated = $request->validate($this->rules($farmer));
         $validated['is_active'] = $request->boolean('is_active', true);
 
@@ -101,9 +106,17 @@ class FarmerController extends Controller
 
     public function destroy(Farmer $farmer)
     {
+        $this->authorise($farmer);
         $farmer->delete();
 
         return redirect()->route('farmers.index')
             ->with('success', 'Farmer record deleted successfully.');
+    }
+
+    private function authorise(Farmer $farmer): void
+    {
+        if (!Auth::user()->getAccessibleFarmers()->whereKey($farmer->id)->exists()) {
+            abort(403);
+        }
     }
 }
