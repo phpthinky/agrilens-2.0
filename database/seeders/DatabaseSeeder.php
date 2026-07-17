@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             PhColorChartSeeder::class,
             NpkColorChartSeeder::class,
             CropsTableSeeder::class,
+            RiceFertilizerScheduleSeeder::class,
         ]);
     }
 }
