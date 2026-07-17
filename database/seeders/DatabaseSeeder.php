@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             PhColorChartSeeder::class,
             NpkColorChartSeeder::class,
+            CropsTableSeeder::class,
         ]);
     }
 }
