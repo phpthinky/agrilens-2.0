@@ -114,6 +114,8 @@ class SampleController extends Controller
             abort(403);
         }
 
+        $sample->load(['farm.farmer.barangay', 'farm.locationBarangay']);
+
         $readings = $sample->getReadingsByParameter();
         $phTest   = $sample->phTest;
         $fertRec  = [];
@@ -142,10 +144,14 @@ class SampleController extends Controller
             abort(403);
         }
 
-        $phTest      = $sample->phTest;
-        $fertRec     = [];
-        $nStatus     = $pStatus = $kStatus = null;
-        $scoredCrops = [];
+        $sample->load(['farm.farmer.barangay', 'farm.locationBarangay']);
+
+        $phTest         = $sample->phTest;
+        $fertRec        = [];
+        $nStatus        = $pStatus = $kStatus = null;
+        $scoredCrops    = [];
+        $scheduleMatrix = [];
+        $scheduleCrop   = null;
 
         if ($sample->isAnalyzed()) {
             $ph = (float)$sample->ph_level;
@@ -198,11 +204,37 @@ class SampleController extends Controller
             }
 
             usort($scoredCrops, fn($a, $b) => $b['score'] <=> $a['score']);
+
+            // Fertilizer recommendation schedule for the report layout —
+            // uses the top-scored crop that actually has a defined schedule,
+            // reusing the same FertilizerScheduleService as the interactive
+            // samples.fertilizer-schedule page (no separate calculation logic).
+            foreach ($scoredCrops as $scored) {
+                if (!$this->scheduleService->resolveKey($scored['crop']->name)) {
+                    continue;
+                }
+
+                $rawSchedule = $this->scheduleService->scheduleForCrop($scored['crop'], $nStatus, $pStatus, $kStatus, 'urea');
+                if (!$rawSchedule) {
+                    continue;
+                }
+
+                $scheduleCrop = $scored['crop'];
+                foreach ([1, 2, 3] as $index) {
+                    $scheduleMatrix[$index] = [
+                        'label' => $rawSchedule[$index]['stage'],
+                        'urea' => $rawSchedule[$index]['urea'],
+                        'dap' => $rawSchedule[$index]['dap'],
+                        'mop' => $rawSchedule[$index]['mop'],
+                    ];
+                }
+                break;
+            }
         }
 
         $pdf = Pdf::loadView('samples.pdf', compact(
             'sample', 'phTest', 'fertRec', 'nStatus', 'pStatus', 'kStatus',
-            'scoredCrops'
+            'scoredCrops', 'scheduleMatrix', 'scheduleCrop'
         ))->setPaper('a4', 'portrait');
 
         $filename = 'soil-report-' . $sample->id . '-' . now()->format('Ymd') . '.pdf';

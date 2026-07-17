@@ -26,10 +26,14 @@
     <div class="card-body">
         <div class="row">
             <div class="col-md-4">
-                <p class="mb-1"><strong>Farmer:</strong> {{ $sample->farmer_name }}</p>
-                <p class="mb-1"><strong>Address:</strong> {{ $sample->address }}</p>
+                <p class="mb-1"><strong>Farmer:</strong> {{ $sample->farm?->farmer->full_name ?? $sample->farmer_name }}</p>
+                <p class="mb-1"><strong>Address:</strong> {{ $sample->farm?->farmer->address ?? $sample->address }}</p>
                 @if($sample->location)
                 <p class="mb-1"><strong>Farm Location:</strong> {{ $sample->location }}</p>
+                @endif
+                <p class="mb-1"><strong>Analysis Method:</strong> {{ ucfirst($sample->analysis_type ?? 'colorimetric') }}</p>
+                @if($sample->analysis_type === 'probe')
+                <p class="mb-1"><strong>Probe ID:</strong> {{ $sample->probe_id }}</p>
                 @endif
             </div>
             <div class="col-md-4">
@@ -59,6 +63,32 @@
         </div>
     </div>
 </div>
+
+@if($sample->farm)
+<div class="card mb-4">
+    <div class="card-header">Farm Information</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <p class="mb-1"><strong>Farm:</strong> <a href="{{ route('farms.show', $sample->farm) }}">{{ $sample->farm->farm_name }}</a></p>
+                <p class="mb-1"><strong>Type:</strong> {{ $sample->farm->farm_type }}</p>
+                <p class="mb-1"><strong>Area:</strong> {{ $sample->farm->formatted_area }}</p>
+            </div>
+            <div class="col-md-4">
+                <p class="mb-1"><strong>Barangay:</strong> {{ $sample->farm->locationBarangay->name }}</p>
+                <p class="mb-1"><strong>Land Tenure:</strong> {{ $sample->farm->land_tenure }}</p>
+                <p class="mb-1"><strong>Irrigation:</strong> {{ $sample->farm->irrigation_type }}</p>
+            </div>
+            <div class="col-md-4">
+                <p class="mb-1"><strong>Current Crops:</strong> {{ $sample->farm->formatted_current_crops }}</p>
+                @if($sample->farm->polygon_coordinates)
+                <p class="mb-0"><a href="{{ route('farms.show', $sample->farm) }}"><i class="fas fa-map-marked-alt me-1"></i>View boundary on map</a></p>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 {{-- ══════════════════════════════════════════════════════════
      SOIL pH — Two-Stage BSWM Protocol Breakdown

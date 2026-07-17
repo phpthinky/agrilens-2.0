@@ -84,19 +84,55 @@
 </div>
 
 <div class="info-grid">
-    <span><strong>Farmer:</strong> {{ $sample->farmer_name }}</span>
-    <span><strong>Address:</strong> {{ $sample->address }}</span>
+    <span><strong>Farmer:</strong> {{ $sample->farm?->farmer->full_name ?? $sample->farmer_name }}</span>
+    <span><strong>Address:</strong> {{ $sample->farm?->farmer->address ?? $sample->address }}</span>
     @if($sample->location)<span><strong>Farm Location:</strong> {{ $sample->location }}</span>@endif
     <span><strong>Date Received:</strong> {{ $sample->sample_date->format('F j, Y') }}</span>
     <span><strong>Date Tested:</strong> {{ $sample->date_tested->format('F j, Y') }}</span>
     @if($sample->analyzed_at)<span><strong>Analyzed:</strong> {{ $sample->analyzed_at->format('F j, Y g:i A') }}</span>@endif
-    <span><strong>Tests Captured:</strong> {{ $sample->tests_completed ?? 0 }}/12</span>
+    <span><strong>Analysis Method:</strong> {{ ucfirst($sample->analysis_type ?? 'colorimetric') }}</span>
     @if(!is_null($sample->fertility_score))
     <span><strong>Fertility Score:</strong>
         <span class="badge badge-{{ $sample->fertilityColorClass() }}">{{ $sample->fertility_score }}%</span>
     </span>
     @endif
 </div>
+
+@if($sample->analysis_type === 'manual')
+<div class="note-box">Soil parameters entered manually by {{ $sample->user->username }}.</div>
+@elseif($sample->analysis_type === 'probe')
+<div class="note-box">Soil parameters read from Digital Probe <strong>{{ $sample->probe_id }}</strong> and confirmed by {{ $sample->user->username }}.</div>
+@endif
+
+{{-- ── Farmer & Farm Information ───────────────────────────────────── --}}
+@if($sample->farm)
+<h2>Farmer &amp; Farm Information</h2>
+<div class="info-grid">
+    <span><strong>Farmer:</strong> {{ $sample->farm->farmer->full_name }}</span>
+    <span><strong>Barangay (Residence):</strong> {{ $sample->farm->farmer->barangay?->name ?? '—' }}</span>
+    <span><strong>Contact:</strong> {{ $sample->farm->farmer->contact_number ?: '—' }}</span>
+    <span><strong>Farm Name:</strong> {{ $sample->farm->farm_name }}</span>
+    <span><strong>Farm Type:</strong> {{ $sample->farm->farm_type }}</span>
+    <span><strong>Farm Area:</strong> {{ $sample->farm->formatted_area }}</span>
+    <span><strong>Land Tenure:</strong> {{ $sample->farm->land_tenure }}</span>
+    <span><strong>Irrigation:</strong> {{ $sample->farm->irrigation_type }}</span>
+    <span><strong>Current Crops:</strong> {{ $sample->farm->formatted_current_crops }}</span>
+</div>
+
+<h3>Farm Location</h3>
+<div class="info-grid">
+    <span><strong>Barangay:</strong> {{ $sample->farm->locationBarangay->name }}</span>
+    <span><strong>Address:</strong> {{ $sample->farm->formatted_address }}</span>
+    @if($sample->farm->display_latitude)
+    <span><strong>GPS Center:</strong> {{ number_format($sample->farm->display_latitude, 6) }}, {{ number_format($sample->farm->display_longitude, 6) }}</span>
+    @endif
+    @if($sample->farm->polygon_coordinates)
+    <span><strong>Boundary Vertices:</strong> {{ count($sample->farm->polygon_coordinates) }} GPS points</span>
+    @endif
+</div>
+<p style="font-size:9pt;color:#777;">A static map cannot be rendered in this PDF — view the interactive farm boundary online at
+    {{ route('farms.show', $sample->farm) }}</p>
+@endif
 
 {{-- ── Soil Parameters Summary ─────────────────────────────────────── --}}
 @if($sample->isAnalyzed())
@@ -321,6 +357,27 @@ $statusRows = [
     @endforeach
 </div>
 @endif
+@endif
+
+{{-- ── Fertilizer Application Schedule ─────────────────────────────── --}}
+@if(!empty($scheduleMatrix) && $scheduleCrop)
+<h2>Fertilizer Application Schedule — {{ $scheduleCrop->name }}</h2>
+<table>
+    <thead>
+        <tr><th>Stage</th><th>Urea (46-0-0)</th><th>DAP (18-46-0)</th><th>MOP (0-0-60)</th></tr>
+    </thead>
+    <tbody>
+        @foreach($scheduleMatrix as $stage)
+        <tr>
+            <td>{{ $stage['label'] }}</td>
+            <td>{{ $stage['urea'] ?? '—' }}</td>
+            <td>{{ $stage['dap'] ?? '—' }}</td>
+            <td>{{ $stage['mop'] ?? '—' }}</td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+<p style="font-size:8.5pt;color:#777;">Full-hectare application split across growth stages for the top-matched crop. For other crops, see the interactive fertilizer schedule online.</p>
 @endif
 
 {{-- ── Crop Recommendations ─────────────────────────────────────── --}}
