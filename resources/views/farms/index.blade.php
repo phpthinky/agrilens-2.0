@@ -1,15 +1,15 @@
 @extends('layouts.app')
-@section('title', 'Farmers')
+@section('title', 'Farms')
 @section('content')
 
 <div class="row mb-3">
     <div class="col-md-8">
-        <h2><i class="fas fa-user-tie me-2"></i>Farmers</h2>
-        <p class="lead text-muted">Registered farmers across all barangays</p>
+        <h2><i class="fas fa-tractor me-2"></i>Farms</h2>
+        <p class="lead text-muted">Registered farms with GPS boundaries</p>
     </div>
     <div class="col-md-4 text-end">
-        <a href="{{ route('farmers.create') }}" class="btn btn-success">
-            <i class="fas fa-user-plus me-1"></i> Register Farmer
+        <a href="{{ route('farms.create') }}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-1"></i> New Farm
         </a>
     </div>
 </div>
@@ -18,13 +18,13 @@
     <div class="card-body">
         <form method="GET" class="row g-2">
             <div class="col-md-4">
-                <input type="text" name="search" class="form-control" placeholder="Search name, contact, email..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control" placeholder="Search farm, farmer, crops..." value="{{ request('search') }}">
             </div>
             <div class="col-md-3">
-                <select name="barangay" class="form-select">
+                <select name="location_barangay" class="form-select">
                     <option value="">All Barangays</option>
                     @foreach($barangays as $b)
-                        <option value="{{ $b->id }}" {{ (string) request('barangay') === (string) $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
+                        <option value="{{ $b->id }}" {{ (string) request('location_barangay') === (string) $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -44,12 +44,12 @@
 
 <div class="card">
     <div class="card-body">
-        @if($farmers->isEmpty())
+        @if($farms->isEmpty())
         <div class="text-center py-5">
-            <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
-            <p class="text-muted">No farmers registered yet.</p>
-            <a href="{{ route('farmers.create') }}" class="btn btn-success">
-                <i class="fas fa-user-plus"></i> Register Your First Farmer
+            <i class="fas fa-tractor fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No farms registered yet.</p>
+            <a href="{{ route('farms.create') }}" class="btn btn-success">
+                <i class="fas fa-plus-circle"></i> Add Your First Farm
             </a>
         </div>
         @else
@@ -57,28 +57,29 @@
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-success">
                     <tr>
-                        <th>Name</th><th>Barangay</th><th>Contact</th><th>Type</th><th>Farms</th><th>Status</th><th>Actions</th>
+                        <th>Farm</th><th>Farmer</th><th>Barangay</th><th>Type</th><th>Area</th><th>Analyses</th><th>Status</th><th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($farmers as $f)
+                    @foreach($farms as $farm)
                     <tr>
-                        <td><a href="{{ route('farmers.show', $f) }}">{{ $f->full_name }}</a></td>
-                        <td>{{ $f->barangay?->name ?? '—' }}</td>
-                        <td>{{ $f->contact_number ?: '—' }}</td>
-                        <td>{{ $f->farmer_type }}</td>
-                        <td>{{ $f->farms_count }}</td>
+                        <td><a href="{{ route('farms.show', $farm) }}">{{ $farm->farm_name }}</a></td>
+                        <td>{{ $farm->farmer->full_name }}</td>
+                        <td>{{ $farm->locationBarangay->name }}</td>
+                        <td>{{ $farm->farm_type }}</td>
+                        <td>{{ $farm->formatted_area }}</td>
+                        <td>{{ $farm->soil_samples_count }}</td>
                         <td>
-                            @if($f->is_active)
+                            @if($farm->is_active)
                                 <span class="badge bg-success">Active</span>
                             @else
                                 <span class="badge bg-secondary">Inactive</span>
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('farmers.show', $f) }}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></a>
-                            <a href="{{ route('farmers.edit', $f) }}" class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></a>
-                            <form action="{{ route('farmers.destroy', $f) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this farmer?');">
+                            <a href="{{ route('farms.show', $farm) }}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></a>
+                            <a href="{{ route('farms.edit', $farm) }}" class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></a>
+                            <form action="{{ route('farms.destroy', $farm) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this farm?');">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                             </form>
@@ -88,7 +89,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="mt-3">{{ $farmers->links() }}</div>
+        <div class="mt-3">{{ $farms->links() }}</div>
         @endif
     </div>
 </div>

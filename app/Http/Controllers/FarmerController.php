@@ -2,161 +2,108 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Barangay;
 use App\Models\Farmer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class FarmerController extends Controller
 {
-    private function farmerQuery()
+    private function rules(?Farmer $farmer = null): array
     {
-        $user = Auth::user();
-        return $user->isAdmin()
-            ? Farmer::with('user')
-            : Farmer::where('user_id', $user->id);
+        return [
+            'barangay_id' => 'required|exists:barangays,id',
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'suffix' => 'nullable|string|max:10',
+            'gender' => 'required|in:Male,Female,Other',
+            'birth_date' => 'nullable|date|before:today',
+            'contact_number' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255|unique:farmers,email' . ($farmer ? ",{$farmer->id}" : ''),
+            'address' => 'required|string|max:500',
+            'id_type' => 'nullable|string|max:100',
+            'id_number' => 'nullable|string|max:100',
+            'farmer_type' => 'required|in:Owner,Tenant,Caretaker,Other',
+            'years_farming' => 'nullable|integer|min:0|max:99',
+            'crops_grown' => 'nullable|string|max:1000',
+            'total_farm_area' => 'nullable|numeric|min:0|max:999999.99',
+            'education_level' => 'nullable|in:Elementary,Elementary Graduate,High School,High School Graduate,Vocational,College,College Graduate,Post Graduate',
+            'notes' => 'nullable|string|max:1000',
+        ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $farmers = $this->farmerQuery()->latest()->get();
-        return view('farmers.index', compact('farmers'));
+        $query = Farmer::with('barangay');
+
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
+        if ($request->filled('barangay')) {
+            $query->byBarangay($request->barangay);
+        }
+        if ($request->filled('status')) {
+            $request->status === 'active' ? $query->active() : $query->where('is_active', false);
+        }
+        if ($request->filled('farmer_type')) {
+            $query->where('farmer_type', $request->farmer_type);
+        }
+
+        $sortBy = $request->get('sort', 'last_name');
+        $sortOrder = $request->get('order', 'asc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $farmers = $query->paginate(20)->withQueryString();
+        $barangays = Barangay::active()->orderBy('name')->get();
+
+        return view('farmers.index', compact('farmers', 'barangays'));
     }
 
     public function create()
     {
-        return view('farmers.create');
+        $barangays = Barangay::active()->orderBy('name')->get();
+        return view('farmers.create', compact('barangays'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name'          => 'required|string|max:150',
-            'address'       => 'required|string|max:255',
-            'farm_location' => 'nullable|string|max:200',
-            'farm_id'       => 'nullable|string|max:100',
-        ]);
+        $validated = $request->validate($this->rules());
+        $validated['is_active'] = $request->boolean('is_active', true);
 
-        Auth::user()->farmers()->create($data);
+        $farmer = Farmer::create($validated);
 
-        return redirect()->route('farmers.index')
-            ->with('success', 'Farmer added successfully.');
+        return redirect()->route('farmers.show', $farmer)
+            ->with('success', 'Farmer registered successfully.');
+    }
+
+    public function show(Farmer $farmer)
+    {
+        $farmer->load(['barangay', 'farms']);
+        return view('farmers.show', compact('farmer'));
     }
 
     public function edit(Farmer $farmer)
     {
-        $this->authorise($farmer);
-        return view('farmers.edit', compact('farmer'));
+        $barangays = Barangay::active()->orderBy('name')->get();
+        return view('farmers.edit', compact('farmer', 'barangays'));
     }
 
     public function update(Request $request, Farmer $farmer)
     {
-        $this->authorise($farmer);
+        $validated = $request->validate($this->rules($farmer));
+        $validated['is_active'] = $request->boolean('is_active', true);
 
-        $data = $request->validate([
-            'name'          => 'required|string|max:150',
-            'address'       => 'required|string|max:255',
-            'farm_location' => 'nullable|string|max:200',
-            'farm_id'       => 'nullable|string|max:100',
-        ]);
+        $farmer->update($validated);
 
-        $farmer->update($data);
-
-        return redirect()->route('farmers.index')
-            ->with('success', 'Farmer updated successfully.');
+        return redirect()->route('farmers.show', $farmer)
+            ->with('success', 'Farmer information updated successfully.');
     }
 
     public function destroy(Farmer $farmer)
     {
-        $this->authorise($farmer);
         $farmer->delete();
 
         return redirect()->route('farmers.index')
-            ->with('success', 'Farmer deleted.');
-    }
-
-    // ── CSV Import ────────────────────────────────────────────────
-
-    public function importForm()
-    {
-        return view('farmers.import');
-    }
-
-    public function import(Request $request)
-    {
-        $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
-        ]);
-
-        $file     = $request->file('csv_file');
-        $handle   = fopen($file->getRealPath(), 'r');
-        $header   = null;
-        $imported = 0;
-        $skipped  = 0;
-        $errors   = [];
-        $userId   = Auth::id();
-
-        while (($row = fgetcsv($handle)) !== false) {
-            // Skip blank lines
-            if (empty(array_filter($row))) continue;
-
-            // First non-empty row is the header
-            if ($header === null) {
-                $header = array_map(fn($h) => strtolower(trim($h)), $row);
-                continue;
-            }
-
-            $data = array_combine($header, $row);
-
-            $name = trim($data['name'] ?? '');
-            if (empty($name)) {
-                $skipped++;
-                continue;
-            }
-
-            try {
-                Farmer::create([
-                    'user_id'       => $userId,
-                    'name'          => $name,
-                    'address'       => trim($data['address'] ?? ''),
-                    'farm_location' => trim($data['farm_location'] ?? '') ?: null,
-                    'farm_id'       => trim($data['farm_id'] ?? '') ?: null,
-                ]);
-                $imported++;
-            } catch (\Throwable $e) {
-                $errors[] = "Row for ".$name.": " . $e->getMessage();
-            }
-        }
-
-        fclose($handle);
-
-        $message = "Imported {$imported} farmer(s).";
-        if ($skipped)        $message .= " Skipped {$skipped} empty row(s).";
-        if (!empty($errors)) $message .= ' Some rows had errors — see details below.';
-
-        return redirect()->route('farmers.index')
-            ->with('success', $message)
-            ->with('import_errors', $errors);
-    }
-
-    // ── JSON endpoint used by sample create form ──────────────────
-
-    public function json()
-    {
-        $farmers = $this->farmerQuery()
-            ->select('id', 'name', 'address', 'farm_location', 'farm_id')
-            ->orderBy('name')
-            ->get();
-
-        return response()->json($farmers);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-
-    private function authorise(Farmer $farmer): void
-    {
-        $user = Auth::user();
-        if (!$user->isAdmin() && $farmer->user_id !== $user->id) {
-            abort(403);
-        }
+            ->with('success', 'Farmer record deleted successfully.');
     }
 }

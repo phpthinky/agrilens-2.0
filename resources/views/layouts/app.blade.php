@@ -228,8 +228,33 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('farmers.import') }}">
-                                        <i class="fa fa-file-import me-1"></i>Import Farmers
+                                    <a class="dropdown-item" href="{{ route('farmers.create') }}">
+                                        <i class="fa fa-user-plus me-1"></i>Register Farmer
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        {{-- Farms dropdown --}}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ request()->routeIs('farms.*', 'barangays.*') ? 'active' : '' }}"
+                               href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fa fa-tractor me-1"></i>Farms
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('farms.index') }}">
+                                        <i class="fa fa-map-marked-alt me-1"></i>All Farms
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('barangays.index') }}">
+                                        <i class="fa fa-city me-1"></i>Barangays
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('public.map') }}">
+                                        <i class="fa fa-map me-1"></i>Public Map
                                     </a>
                                 </li>
                             </ul>
@@ -373,7 +398,7 @@
                 </li>
 
                 <li><div class="sidebar-divider"></div></li>
-                <li><span class="sidebar-section">Farmers</span></li>
+                <li><span class="sidebar-section">Farmers &amp; Farms</span></li>
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('farmers.*') ? 'active' : '' }}"
                        href="{{ route('farmers.index') }}">
@@ -381,9 +406,21 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('farmers.import') ? 'active' : '' }}"
-                       href="{{ route('farmers.import') }}">
-                        <i class="fa fa-file-import"></i> Import Farmers
+                    <a class="nav-link {{ request()->routeIs('farms.*') ? 'active' : '' }}"
+                       href="{{ route('farms.index') }}">
+                        <i class="fa fa-tractor"></i> Farms
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('barangays.*') ? 'active' : '' }}"
+                       href="{{ route('barangays.index') }}">
+                        <i class="fa fa-city"></i> Barangays
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('public.map') ? 'active' : '' }}"
+                       href="{{ route('public.map') }}">
+                        <i class="fa fa-map"></i> Public Map
                     </a>
                 </li>
 

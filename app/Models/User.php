@@ -39,9 +39,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(SoilSample::class);
     }
-
-    public function farmers(): HasMany
-    {
-        return $this->hasMany(Farmer::class);
-    }
 }

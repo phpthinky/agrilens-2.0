@@ -11,7 +11,10 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\NpkColorChartController;
 use App\Http\Controllers\Admin\PhColorChartController;
 use App\Http\Controllers\Admin\CropFertilizerScheduleController;
+use App\Http\Controllers\BarangayController;
 use App\Http\Controllers\FarmerController;
+use App\Http\Controllers\FarmController;
+use App\Http\Controllers\PublicMapController;
 use App\Http\Controllers\PhTestController;
 use App\Http\Controllers\ParameterTestController;
 use App\Http\Controllers\GeminiCropRecommendationController;
@@ -36,6 +39,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+
+// ── Public map ──────────────────────────────────────────────────────────────
+Route::get('/map', [PublicMapController::class, 'index'])->name('public.map');
+Route::get('/map/farm/{farm}', [PublicMapController::class, 'farmDetails'])->name('public.farm.details');
+Route::get('/api/farms-data', [PublicMapController::class, 'getFarmsData'])->name('api.farms-data');
 
 // ── Authenticated routes ──────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
@@ -70,16 +78,32 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/ai-recommendation',         [AiRecommendationController::class,       'generate'])->name('ai-recommendation.generate');
     Route::post('/api/gemini-crop-recommendations',[GeminiCropRecommendationController::class, 'generate'])->name('gemini-crop-recommendations.generate');
 
-    // Farmers (CRUD + CSV import + JSON for autocomplete)
+    // Barangays
+    Route::resource('barangays', BarangayController::class);
+
+    // Farmers (ported from Version 1 — replaces the old simple Add-Farmer flow)
     Route::get('/farmers',                [FarmerController::class, 'index'])->name('farmers.index');
     Route::get('/farmers/create',         [FarmerController::class, 'create'])->name('farmers.create');
     Route::post('/farmers',               [FarmerController::class, 'store'])->name('farmers.store');
-    Route::get('/farmers/import',         [FarmerController::class, 'importForm'])->name('farmers.import');
-    Route::post('/farmers/import',        [FarmerController::class, 'import'])->name('farmers.import.store');
-    Route::get('/farmers/json',           [FarmerController::class, 'json'])->name('farmers.json');
+    Route::get('/farmers/{farmer}',       [FarmerController::class, 'show'])->name('farmers.show');
     Route::get('/farmers/{farmer}/edit',  [FarmerController::class, 'edit'])->name('farmers.edit');
     Route::put('/farmers/{farmer}',       [FarmerController::class, 'update'])->name('farmers.update');
     Route::delete('/farmers/{farmer}',    [FarmerController::class, 'destroy'])->name('farmers.destroy');
+
+    // Farms + GIS mapping
+    Route::get('/farms',                  [FarmController::class, 'index'])->name('farms.index');
+    Route::get('/farms/create',           [FarmController::class, 'create'])->name('farms.create');
+    Route::post('/farms',                 [FarmController::class, 'store'])->name('farms.store');
+    Route::get('/farms/{farm}',           [FarmController::class, 'show'])->name('farms.show');
+    Route::get('/farms/{farm}/edit',      [FarmController::class, 'edit'])->name('farms.edit');
+    Route::put('/farms/{farm}',           [FarmController::class, 'update'])->name('farms.update');
+    Route::delete('/farms/{farm}',        [FarmController::class, 'destroy'])->name('farms.destroy');
+
+    Route::get('/api/farmers-by-barangay', [FarmController::class, 'getFarmersByBarangay'])->name('api.farmers-by-barangay');
+    Route::get('/api/farms-for-map',       [FarmController::class, 'getFarmsForMap'])->name('api.farms-for-map');
+    Route::get('/api/farms-statistics',    [FarmController::class, 'getStatistics'])->name('api.farms-statistics');
+    Route::get('/api/farms/all-polygons',  [FarmController::class, 'getAllFarmPolygons'])->name('api.farms.all-polygons');
+    Route::post('/api/farms/validate-polygon', [FarmController::class, 'validatePolygonOverlap'])->name('api.farms.validate-polygon');
 
     // Export
     Route::get('/export',                          [ExportController::class, 'export'])->name('export');
