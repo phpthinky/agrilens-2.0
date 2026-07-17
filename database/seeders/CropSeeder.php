@@ -32,11 +32,12 @@ class CropSeeder extends Seeder
 
         foreach ($crops as [$name, $desc, $minPh, $maxPh, $minN, $maxN, $minP, $maxP, $minK, $maxK]) {
             Crop::firstOrCreate(['name' => $name], [
-                'description'    => $desc,
-                'min_ph'         => $minPh, 'max_ph'         => $maxPh,
-                'min_nitrogen'   => $minN,  'max_nitrogen'   => $maxN,
-                'min_phosphorus' => $minP,  'max_phosphorus' => $maxP,
-                'min_potassium'  => $minK,  'max_potassium'  => $maxK,
+                'description' => $desc,
+                'ph_low' => $minPh, 'ph_med' => round(($minPh + $maxPh) / 2, 2), 'ph_high' => $maxPh,
+                'n_low'  => $minN,  'n_med'  => round(($minN + $maxN) / 2, 2),  'n_high'  => $maxN,
+                'p_low'  => $minP,  'p_med'  => round(($minP + $maxP) / 2, 2),  'p_high'  => $maxP,
+                'k_low'  => $minK,  'k_med'  => round(($minK + $maxK) / 2, 2),  'k_high'  => $maxK,
+                'status' => 'active',
             ]);
         }
     }

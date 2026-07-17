@@ -169,7 +169,7 @@ class ExportController extends Controller
     public function exportPhase2(Request $request): StreamedResponse
     {
         $user    = Auth::user();
-        $samples = SoilSample::with(['farmer', 'user'])
+        $samples = SoilSample::with(['farmer', 'farm', 'user'])
             ->where(function ($q) use ($user) {
                 if (!$user->isAdmin()) $q->where('user_id', $user->id);
             })
@@ -185,12 +185,12 @@ class ExportController extends Controller
 
             fputcsv($out, ['=== PHASE 2 EXPORT — Soil Fertility Analyzer / OMA ===']);
             fputcsv($out, ['Export Date', now()->format('F j, Y g:i A')]);
-            fputcsv($out, ['Note', 'Contains analyzed samples only. farm_id matches Arduino device records.']);
+            fputcsv($out, ['Note', 'Contains analyzed samples only. probe_id matches Arduino device records.']);
             fputcsv($out, []);
 
             // Required phase 2 columns
             fputcsv($out, [
-                'id',            // Arduino / Farm ID (from farmers.farm_id)
+                'probe_id',      // Arduino / Digital Probe device ID
                 'user_id',       // Farmer record ID (from farmers.id)
                 'sample_name',   // Sample identifier
                 'location',      // Barangay / farm location
@@ -218,10 +218,10 @@ class ExportController extends Controller
                 $rec = $this->fertilizer->summary($fr);
 
                 fputcsv($out, [
-                    $s->farmer?->farm_id ?? '',     // id — Arduino record ID
-                    $s->farmer?->id      ?? '',     // user_id — Farmer system ID
+                    $s->probe_id     ?? '',     // probe_id — Arduino/Digital Probe device ID
+                    $s->farmer?->id  ?? '',     // user_id — Farmer system ID
                     $s->sample_name,
-                    $s->location ?? $s->farmer?->farm_location ?? '',
+                    $s->location ?? $s->farm?->farm_address ?? '',
                     $s->date_tested?->format('Y-m-d') ?? $s->sample_date->format('Y-m-d'),
                     number_format((float)$s->ph_level, 2),
                     number_format((float)$s->nitrogen_level, 2),
@@ -238,7 +238,7 @@ class ExportController extends Controller
 
             fputcsv($out, []);
             fputcsv($out, ['=== COLUMN NOTES ===']);
-            fputcsv($out, ['id',             'Arduino/Phase 2 record ID stored in the Farmer profile (farm_id field)']);
+            fputcsv($out, ['probe_id',       'Arduino/Digital Probe device ID stored on the soil sample (probe_id field)']);
             fputcsv($out, ['user_id',        'Internal Farmer ID — use for matching records in Phase 2 database']);
             fputcsv($out, ['sample_date',    'Date the soil test was performed (date_tested field)']);
             fputcsv($out, ['recommendations','Fertilizer recommendation summary (lime/urea/TSP/MOP per hectare)']);
