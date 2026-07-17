@@ -1,0 +1,7 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+<FilesMatch "\.(jpg|jpeg|png|gif|bmp|tiff)$">
+    Header set Access-Control-Allow-Origin "*"
+</FilesMatch>

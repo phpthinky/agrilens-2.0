@@ -1,0 +1,1063 @@
+@extends('layouts.app')
+@section('title', 'Help & Guidelines')
+
+@section('styles')
+<style>
+    .help-toc a { text-decoration: none; color: #2e7d32; font-size: .9rem; }
+    .help-toc a:hover { text-decoration: underline; }
+    .help-toc li { padding: .25rem 0; }
+    .section-anchor { scroll-margin-top: 80px; }
+    .step-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 28px; height: 28px; border-radius: 50%;
+        background: #2e7d32; color: #fff; font-weight: 700;
+        font-size: .85rem; flex-shrink: 0; margin-right: 10px;
+    }
+    .step-row { display: flex; align-items: flex-start; margin-bottom: .6rem; }
+    .step-row p { margin: 0; line-height: 1.5; }
+    .outcome-badge { font-size: .78rem; padding: .2rem .55rem; border-radius: 20px; font-weight: 600; }
+    .help-nav { position: sticky; top: 80px; }
+    code.key { background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 1px 6px; font-size: .85rem; }
+</style>
+@endsection
+
+@section('content')
+
+<div class="row">
+
+    {{-- ── Left: Table of Contents (sticky) ──────────────────── --}}
+    <div class="col-lg-3 d-none d-lg-block">
+        <div class="help-nav card p-3">
+            <h6 class="fw-bold text-success mb-3">
+                <i class="fas fa-list-ul me-1"></i> Contents
+            </h6>
+            <ul class="list-unstyled help-toc mb-0">
+                <li><a href="#overview"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Overview</a></li>
+                <li><a href="#getting-started"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Getting Started</a></li>
+                <li><a href="#ph-test"><i class="fas fa-circle fa-xs me-1 text-muted"></i> pH Test (2-Step)</a></li>
+                <li class="ms-3"><a href="#ph-step1"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Step 1 — CPR</a></li>
+                <li class="ms-3"><a href="#ph-step2"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Step 2 — BCG / BTB</a></li>
+                <li class="ms-3"><a href="#ph-outcomes"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Outcome Codes</a></li>
+                <li><a href="#npk-tests"><i class="fas fa-circle fa-xs me-1 text-muted"></i> N / P / K Tests</a></li>
+                <li><a href="#capture-guide"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Capture Guide</a></li>
+                <li><a href="#fertilizer-calc"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Fertilizer Calculator</a></li>
+                <li class="ms-3"><a href="#fert-formulas"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Calculation Formulas</a></li>
+                <li class="ms-3"><a href="#fert-thresholds"><i class="fas fa-circle fa-xs me-1 text-muted"></i> BSWM Thresholds</a></li>
+                <li><a href="#crop-management"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Crop Management (CRUD)</a></li>
+                <li class="ms-3"><a href="#crop-lhm-encoding"><i class="fas fa-circle fa-xs me-1 text-muted"></i> LHM Column Encoding</a></li>
+                <li><a href="#crop-requirements"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Crop Requirements</a></li>
+                <li><a href="#samples-workflow"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Sample Workflow</a></li>
+                <li><a href="#roles"><i class="fas fa-circle fa-xs me-1 text-muted"></i> User Roles</a></li>
+                <li><a href="#reference"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Quick Reference</a></li>
+                <li><a href="#troubleshooting"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Troubleshooting</a></li>
+            </ul>
+        </div>
+    </div>
+
+    {{-- ── Right: Help content ─────────────────────────────────── --}}
+    <div class="col-lg-9">
+
+        <div class="d-flex align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-success mb-0">
+                    <i class="fas fa-circle-question me-2"></i>Help &amp; Guidelines
+                </h3>
+                <p class="text-muted mb-0 small">BSWM Soil Fertility Analyzer — Technician Reference</p>
+            </div>
+        </div>
+
+        {{-- ── OVERVIEW ──────────────────────────────────────────── --}}
+        <div id="overview" class="section-anchor card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-seedling me-2"></i>Overview
+            </div>
+            <div class="card-body">
+                <p>
+                    The <strong>Soil Fertility Analyzer</strong> guides field technicians through the Bureau of Soils
+                    and Water Management (BSWM) colorimetric procedure to measure soil <strong>pH</strong>,
+                    <strong>Nitrogen (N)</strong>, <strong>Phosphorus (P)</strong>, and <strong>Potassium (K)</strong>
+                    using a portable test kit and camera-based color capture.
+                </p>
+                <div class="row g-3 mt-1">
+                    <div class="col-sm-6 col-md-3">
+                        <div class="border rounded p-2 text-center">
+                            <i class="fas fa-vial fa-2x text-success mb-1"></i>
+                            <div class="small fw-bold">4 Parameters</div>
+                            <div class="text-muted" style="font-size:.75rem;">pH · N · P · K</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="border rounded p-2 text-center">
+                            <i class="fas fa-camera fa-2x text-primary mb-1"></i>
+                            <div class="small fw-bold">3 Captures / Test</div>
+                            <div class="text-muted" style="font-size:.75rem;">Averaged for accuracy</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="border rounded p-2 text-center">
+                            <i class="fas fa-clock fa-2x text-warning mb-1"></i>
+                            <div class="small fw-bold">8 min Timer</div>
+                            <div class="text-muted" style="font-size:.75rem;">Per reaction step</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="border rounded p-2 text-center">
+                            <i class="fas fa-leaf fa-2x text-info mb-1"></i>
+                            <div class="small fw-bold">Auto Fertilizer Rec.</div>
+                            <div class="text-muted" style="font-size:.75rem;">Crop-specific kg/ha</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── GETTING STARTED ───────────────────────────────────── --}}
+        <div id="getting-started" class="section-anchor card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-play-circle me-2"></i>Getting Started
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">Log in with your assigned username and password.</li>
+                    <li class="mb-2">Go to <strong>Soil Samples → New Sample</strong> and fill in the farmer details, field location, and date tested.</li>
+                    <li class="mb-2">Open the sample you just created and start the testing workflow in order:
+                        <span class="badge bg-secondary me-1">pH</span>
+                        <span class="badge bg-success me-1">Nitrogen</span>
+                        <span class="badge bg-primary me-1">Phosphorus</span>
+                        <span class="badge bg-info">Potassium</span>
+                    </li>
+                    <li class="mb-2">After all four parameters are done, review the <strong>Fertilizer Recommendation</strong> and use the calculator for crop-specific rates.</li>
+                    <li>Export or print the sample report as needed.</li>
+                </ol>
+            </div>
+        </div>
+
+        {{-- ── pH TEST ───────────────────────────────────────────── --}}
+        <div id="ph-test" class="section-anchor card mb-4">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-flask me-2"></i>pH Test — BSWM 2-Step Protocol
+            </div>
+            <div class="card-body">
+
+                <div class="alert alert-warning mb-4">
+                    <i class="fas fa-triangle-exclamation me-1"></i>
+                    <strong>Important:</strong> The pH test always starts with <strong>CPR (Comparative Point Reference)</strong>
+                    solution to determine the reading range, then uses a confirmatory solution (BCG or BTB) if needed.
+                </div>
+
+                {{-- Step 1 --}}
+                <h6 id="ph-step1" class="section-anchor fw-bold text-dark mb-3">
+                    <span class="badge bg-secondary me-1">Step 1</span> CPR (Comparative Point Reference)
+                </h6>
+                <p class="text-muted small">Determines the approximate pH range of the soil.</p>
+                @php
+                $step1 = [
+                    'Transfer soil sample to the 1st scratch mark (~0.5 g) in a clean dry test tube.',
+                    'Fill with <strong>CPR Solution</strong> to the 2nd scratch mark (~1 mL).',
+                    'Mix well by tapping into your palm for <strong>1 minute</strong>.',
+                    'Let stand for <strong>2 minutes</strong>, then mix again for 1 minute.',
+                    'Let stand for <strong>5 minutes</strong>.',
+                    'Insert the test tube into the image capturing box for color capture.',
+                    'Take <strong>3 captures</strong> — the system averages them for accuracy.',
+                ];
+                @endphp
+                @foreach($step1 as $i => $s)
+                <div class="step-row">
+                    <span class="step-badge">{{ $i + 1 }}</span>
+                    <p>{!! $s !!}</p>
+                </div>
+                @endforeach
+
+                <div class="alert alert-info mt-3 mb-4">
+                    <strong>After Step 1 capture</strong>, the system automatically decides:
+                    <ul class="mb-0 mt-1">
+                        <li>pH &le; 5.4 → proceed with <strong>BCG</strong> (Blue Cresol Green)</li>
+                        <li>pH 5.4–5.8 → <strong>CPR result is final</strong> (no Step 2 needed)</li>
+                        <li>pH &gt; 5.8 → proceed with <strong>BTB</strong> (Bromothymol Blue)</li>
+                        <li>pH outside 4.0–7.6 → <strong>RETEST</strong> with fresh sample</li>
+                    </ul>
+                </div>
+
+                {{-- Step 2 --}}
+                <h6 id="ph-step2" class="section-anchor fw-bold text-dark mb-3">
+                    <span class="badge bg-secondary me-1">Step 2</span> BCG or BTB (Confirmatory)
+                </h6>
+                <p class="text-muted small">Confirms the pH value with a narrower-range indicator solution.</p>
+                @php
+                $step2 = [
+                    'Use a <strong>fresh test tube</strong> — do not reuse the Step 1 tube.',
+                    'Transfer a new soil portion to the 1st scratch mark.',
+                    'Fill with the <strong>assigned solution</strong> (BCG or BTB) to the 2nd scratch mark.',
+                    'Mix for <strong>1 minute</strong>, stand <strong>2 minutes</strong>, mix <strong>1 minute</strong>, stand <strong>5 minutes</strong>.',
+                    'Insert the test tube into the image capturing box for color capture.',
+                    'Take <strong>3 captures</strong>.',
+                    'The system records the final pH from the averaged Step 2 color.',
+                ];
+                @endphp
+                @foreach($step2 as $i => $s)
+                <div class="step-row">
+                    <span class="step-badge" style="background:#1565c0;">{{ $i + 1 }}</span>
+                    <p>{!! $s !!}</p>
+                </div>
+                @endforeach
+
+                {{-- Outcome codes --}}
+                <h6 id="ph-outcomes" class="section-anchor fw-bold text-dark mt-4 mb-3">
+                    pH Outcome Codes
+                </h6>
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Code</th><th>Step</th><th>Meaning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-primary outcome-badge">win-bcg</span></td>
+                            <td>Step 1</td>
+                            <td>pH ≤ 5.4 — BCG confirmatory step needed</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-info outcome-badge">win-btb</span></td>
+                            <td>Step 1</td>
+                            <td>pH &gt; 5.8 — BTB confirmatory step needed</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-success outcome-badge">win-cpr</span></td>
+                            <td>Step 1</td>
+                            <td>pH 5.4–5.8 — CPR result is final; no Step 2</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-warning text-dark outcome-badge">retest</span></td>
+                            <td>Step 1</td>
+                            <td>pH outside 4.0–7.6 — sample must be retested</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-danger outcome-badge">high-acid</span></td>
+                            <td>Step 1</td>
+                            <td>CPR pH &lt; 4.0 — strongly acidic, retest</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-secondary outcome-badge">alkaline</span></td>
+                            <td>Step 1</td>
+                            <td>CPR pH &gt; 7.6 — alkaline/outside range, retest</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-success outcome-badge">confirmed</span></td>
+                            <td>Step 2</td>
+                            <td>Step 1 &amp; Step 2 pH values agree (Δ ≤ 0.3)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-warning text-dark outcome-badge">borderline</span></td>
+                            <td>Step 2</td>
+                            <td>Small discrepancy (Δ 0.3–0.5); Step 2 value used</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-danger outcome-badge">inconsistent</span></td>
+                            <td>Step 2</td>
+                            <td>Large discrepancy (Δ &gt; 0.5); repeat recommended</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        {{-- ── N/P/K TESTS ───────────────────────────────────────── --}}
+        <div id="npk-tests" class="section-anchor card mb-4">
+            <div class="card-header text-white" style="background:#1b5e20;">
+                <i class="fas fa-atom me-2"></i>Nitrogen · Phosphorus · Potassium Tests
+            </div>
+            <div class="card-body">
+                <p>N, P, and K each have their own test page with the same 3-capture workflow but different reagents.</p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Reagent</th>
+                                <th>Unit</th>
+                                <th>Color Scheme</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><i class="fas fa-leaf text-success me-1"></i><strong>Nitrogen (N)</strong></td>
+                                <td>Nitrogen Reagent (N-Reagent)</td>
+                                <td>kg/ha</td>
+                                <td><span class="badge bg-success">Green</span></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-atom text-primary me-1"></i><strong>Phosphorus (P)</strong></td>
+                                <td>Phosphorus Reagent (P-Reagent)</td>
+                                <td>kg/ha</td>
+                                <td><span class="badge bg-primary">Blue</span></td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-seedling text-info me-1"></i><strong>Potassium (K)</strong></td>
+                                <td>Potassium Reagent (K-Reagent)</td>
+                                <td>kg/ha</td>
+                                <td><span class="badge bg-info">Teal</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold mt-3 mb-2">Protocol (same for all three):</h6>
+                @php
+                $npkSteps = [
+                    'Transfer soil sample to the 1st scratch mark (~0.5 g) in a clean dry test tube.',
+                    'Fill with the <strong>appropriate reagent</strong> to the 2nd scratch mark (~1 mL).',
+                    'Mix well by tapping into your palm for <strong>1 minute</strong>.',
+                    'Let stand for <strong>2 minutes</strong>, then mix again for 1 minute.',
+                    'Let stand for <strong>5 minutes</strong>.',
+                    'Insert the test tube into the image capturing box for color capture.',
+                    'Take <strong>3 captures</strong> — the system will average and compute the kg/ha value.',
+                ];
+                @endphp
+                @foreach($npkSteps as $i => $s)
+                <div class="step-row">
+                    <span class="step-badge">{{ $i + 1 }}</span>
+                    <p>{!! $s !!}</p>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- ── CAPTURE GUIDE ─────────────────────────────────────── --}}
+        <div id="capture-guide" class="section-anchor card mb-4">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-camera me-2"></i>Image Capture Guide
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Before capturing:</h6>
+                        <ul class="mb-0">
+                            <li>Click <strong>Start Camera</strong> and allow browser access.</li>
+                            <li>Place the test tube inside the <strong>image capturing box</strong>.</li>
+                            <li>Ensure the box lid is closed for consistent lighting.</li>
+                            <li>The <strong>dashed circle crosshair</strong> on the camera feed shows the sampling zone — center the test tube color within it.</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Taking captures:</h6>
+                        <ul class="mb-0">
+                            <li>Captures must be taken <strong>sequentially</strong> (1 → 2 → 3).</li>
+                            <li>Click <strong>Capture 1</strong>, wait for "Done", then Capture 2, etc.</li>
+                            <li>Each reading is stored immediately to the server.</li>
+                            <li>You can <strong>redo</strong> an individual capture using the <i class="fas fa-redo fa-xs"></i> button.</li>
+                            <li>After all 3 captures the system shows the <strong>averaged color swatch</strong> and computed value.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="fas fa-triangle-exclamation me-1"></i>
+                    <strong>Tip:</strong> Always use the <strong>8-minute reaction timer</strong> before capturing. Premature reading can produce inaccurate results.
+                </div>
+            </div>
+        </div>
+
+        {{-- ── FERTILIZER CALCULATOR ─────────────────────────────── --}}
+        <div id="fertilizer-calc" class="section-anchor card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <i class="fas fa-calculator me-2"></i>Fertilizer Calculator
+            </div>
+            <div class="card-body">
+                <p>
+                    Found on the <strong>Sample Detail</strong> page (scroll to <em>Fertilizer Recommendation</em>).
+                    Use this after all 4 test parameters are complete.
+                </p>
+                <ol>
+                    <li class="mb-1">Select the <strong>Crop</strong> from the dropdown (linked to the crops database).</li>
+                    <li class="mb-1">Enter the <strong>Farm Area</strong> in hectares.</li>
+                    <li class="mb-1">Choose a <strong>Primary Fertilizer Type</strong> (e.g., Urea 46-0-0, Complete 14-14-14).</li>
+                    <li class="mb-1">Click <strong>Calculate Fertilizer</strong> to see results.</li>
+                </ol>
+
+                {{-- ── Formulas ──────────────────────────────────────── --}}
+                <h6 id="fert-formulas" class="section-anchor fw-bold mt-4 mb-2">
+                    <i class="fas fa-superscript me-1 text-warning"></i>Fertilizer Calculation Formulas
+                </h6>
+
+                <div class="alert alert-info small mb-3">
+                    <i class="fas fa-circle-info me-1"></i>
+                    <strong>Key concept:</strong> Soil status (Low / Medium / High) is determined by the <em>general BSWM classifier</em>
+                    — the same classification shown in the <strong>Current Soil Status</strong> table.
+                    That status selects the matching column from the crop table:
+                    <strong>Low → n_low</strong>, <strong>Medium → n_med</strong>, <strong>High → n_high</strong>.
+                    The column value is the target ppm, which is then divided by the fertilizer fraction to get kg/ha.
+                </div>
+
+                <div class="alert alert-secondary small mb-3">
+                    <strong>Step 1 — Classify Soil (BSWM General Thresholds)</strong><br>
+                    The system classifies soil N, P, K using fixed BSWM thresholds, producing
+                    <span class="badge bg-danger">Low</span>
+                    <span class="badge bg-warning text-dark">Medium</span>
+                    <span class="badge bg-success">High</span>
+                    — the same status shown in <em>Current Soil Status</em>.
+                    <div class="table-responsive mt-2">
+                        <table class="table table-bordered table-sm text-center align-middle mb-0" style="font-size:.82rem;">
+                            <thead class="table-light">
+                                <tr><th>Nutrient</th><th>Low (deficient)</th><th>Medium</th><th>High (sufficient)</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td class="fw-semibold text-start">Nitrogen (N)</td><td>&lt; 45 kg/ha</td><td>45–159 kg/ha</td><td>≥ 160 kg/ha</td></tr>
+                                <tr><td class="fw-semibold text-start">Phosphorus (P)</td><td>&lt; 15 kg/ha</td><td>15–29 kg/ha</td><td>≥ 30 kg/ha</td></tr>
+                                <tr><td class="fw-semibold text-start">Potassium (K)</td><td>&lt; 20 kg/ha</td><td>20–39 kg/ha</td><td>≥ 40 kg/ha</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="alert alert-secondary small mb-3">
+                    <strong>Step 2 — Look Up Crop Target ppm</strong><br>
+                    The soil status selects the matching column from the crop's threshold table.
+                    These column values are the <em>fertilizer target ppm</em> — higher values mean more fertilizer is needed.
+                    <div class="table-responsive mt-2">
+                        <table class="table table-bordered table-sm text-center align-middle mb-0" style="font-size:.82rem;">
+                            <thead class="table-light">
+                                <tr><th>Soil Status</th><th>Crop Column Used</th><th>Meaning</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-danger">
+                                    <td><span class="badge bg-danger">Low</span> (most deficient)</td>
+                                    <td><code>n_low</code> — highest value</td>
+                                    <td>Most fertilizer needed</td>
+                                </tr>
+                                <tr class="table-warning">
+                                    <td><span class="badge bg-warning text-dark">Medium</span></td>
+                                    <td><code>n_med</code> — moderate value</td>
+                                    <td>Standard application</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td><span class="badge bg-success">High</span> (sufficient)</td>
+                                    <td><code>n_high</code> — smallest value</td>
+                                    <td>Limited / maintenance application</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="alert alert-secondary small mb-3">
+                    <strong>Step 3 — Calculate Fertilizer (kg/ha)</strong>
+                    <div class="bg-white border rounded p-2 mt-2 font-monospace">
+                        Fertilizer kg/ha = target_ppm ÷ fertilizer_fraction
+                    </div>
+                    <div class="text-muted mt-2">
+                        Fertilizer fractions: <strong>Urea 46-0-0</strong> → N = 0.46 &nbsp;|&nbsp;
+                        <strong>Complete 14-14-14</strong> → N/P/K = 0.14 &nbsp;|&nbsp;
+                        <strong>DAP 18-46-0</strong> → P = 0.46 &nbsp;|&nbsp;
+                        <strong>MOP 0-0-60</strong> → K = 0.60 &nbsp;|&nbsp;
+                        <strong>Ammonium Sulfate 21-0-0</strong> → N = 0.21
+                    </div>
+                </div>
+
+                <div class="alert alert-secondary small mb-3">
+                    <strong>Step 4 — Total for Farm Area</strong>
+                    <div class="bg-white border rounded p-2 mt-2 font-monospace">
+                        Total kg = Fertilizer kg/ha × Farm area (ha)
+                    </div>
+                </div>
+
+                <div class="alert alert-secondary small mb-3">
+                    <strong>Lime for pH Correction (BSWM Thresholds)</strong><br>
+                    Applied as dolomitic lime to correct soil acidity before planting:
+                    <div class="bg-white border rounded p-2 mt-2 font-monospace">
+                        pH &lt; 5.0 → 2.0 t/ha &nbsp;(strongly acidic)<br>
+                        pH 5.0–5.5 → 1.0 t/ha &nbsp;(moderately acidic)<br>
+                        pH ≥ 5.5 → no lime needed
+                    </div>
+                </div>
+
+                {{-- Worked Example ──────────────────────────────── --}}
+                <h6 class="fw-bold text-info mb-2">
+                    <i class="fas fa-seedling me-1"></i>Worked Example — BATAO, Nitrogen, Urea
+                </h6>
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="font-size:.82rem;">
+                        <tbody>
+                            <tr><td class="text-muted" style="width:45%">Soil N reading</td><td><strong>35 kg/ha</strong></td></tr>
+                            <tr><td class="text-muted">BSWM classification</td><td>35 &lt; 45 → <span class="badge bg-danger">Low</span> (deficient)</td></tr>
+                            <tr><td class="text-muted">Crop table column selected</td><td><code>n_low</code> (Low status → lowest column = highest rate)</td></tr>
+                            <tr><td class="text-muted">BATAO <code>n_low</code> value</td><td><strong>45 kg/ha</strong></td></tr>
+                            <tr><td class="text-muted">Fertilizer fraction (Urea)</td><td>0.46</td></tr>
+                            <tr><td class="text-muted fw-bold">Urea needed (kg/ha)</td><td class="fw-bold text-danger">45 ÷ 0.46 = <strong>97.83 kg Urea/ha</strong></td></tr>
+                            <tr><td class="text-muted">Total for 2 ha farm</td><td>97.83 × 2 = <strong>195.65 kg</strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- BSWM Thresholds ───────────────────────────── --}}
+                <h6 id="fert-thresholds" class="section-anchor fw-bold mt-4 mb-2">
+                    <i class="fas fa-table me-1 text-warning"></i>BSWM Nutrient Thresholds &amp; Fertilizer Rates
+                </h6>
+                <p class="small text-muted">
+                    These thresholds are used by the <strong>Quick Recommendation</strong> (top of the sample page)
+                    based on BSWM/PhilRice colorimetric soil test guidelines.
+                    The <em>Fertilizer Calculator</em> below it uses the crop-specific formulas above instead.
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-warning">
+                            <tr>
+                                <th>Nutrient</th>
+                                <th>Level</th>
+                                <th>Soil Range</th>
+                                <th>Recommended Rate</th>
+                                <th>Application Timing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-danger">
+                                <td rowspan="3"><strong>Nitrogen</strong><br><small class="text-muted">Urea 46-0-0</small></td>
+                                <td><span class="badge bg-danger">Low</span></td>
+                                <td>&lt; 90 kg/ha</td>
+                                <td>4.0 bags/ha</td>
+                                <td>½ basal + ½ at panicle initiation</td>
+                            </tr>
+                            <tr class="table-warning">
+                                <td><span class="badge bg-warning text-dark">Medium</span></td>
+                                <td>90–320 kg/ha</td>
+                                <td>2.5 bags/ha</td>
+                                <td>½ basal + ½ at active tillering</td>
+                            </tr>
+                            <tr class="table-success">
+                                <td><span class="badge bg-success">High</span></td>
+                                <td>≥ 320 kg/ha</td>
+                                <td>1.0 bag/ha</td>
+                                <td>Maintenance only</td>
+                            </tr>
+                            <tr class="table-danger">
+                                <td rowspan="3"><strong>Phosphorus</strong><br><small class="text-muted">TSP 0-46-0</small></td>
+                                <td><span class="badge bg-danger">Low</span></td>
+                                <td>&lt; 30 kg/ha</td>
+                                <td>2.5 bags/ha</td>
+                                <td>Basal (at planting)</td>
+                            </tr>
+                            <tr class="table-warning">
+                                <td><span class="badge bg-warning text-dark">Medium</span></td>
+                                <td>30–60 kg/ha</td>
+                                <td>1.5 bags/ha</td>
+                                <td>Basal</td>
+                            </tr>
+                            <tr class="table-success">
+                                <td><span class="badge bg-success">High</span></td>
+                                <td>≥ 60 kg/ha</td>
+                                <td>0 bags/ha</td>
+                                <td>None needed</td>
+                            </tr>
+                            <tr class="table-danger">
+                                <td rowspan="3"><strong>Potassium</strong><br><small class="text-muted">MOP 0-0-60</small></td>
+                                <td><span class="badge bg-danger">Low</span></td>
+                                <td>&lt; 40 kg/ha</td>
+                                <td>2.0 bags/ha</td>
+                                <td>Basal</td>
+                            </tr>
+                            <tr class="table-warning">
+                                <td><span class="badge bg-warning text-dark">Medium</span></td>
+                                <td>40–80 kg/ha</td>
+                                <td>1.0 bag/ha</td>
+                                <td>Basal</td>
+                            </tr>
+                            <tr class="table-success">
+                                <td><span class="badge bg-success">High</span></td>
+                                <td>≥ 80 kg/ha</td>
+                                <td>0 bags/ha</td>
+                                <td>None needed</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info small mt-2 mb-0">
+                    <i class="fas fa-circle-info me-1"></i>
+                    All fertilizer rates above are per hectare using 50-kg commercial bags.
+                    Source: BSWM/PhilRice Soil Fertility Management Guidelines.
+                </div>
+            </div>
+        </div>
+
+        {{-- ── CROP MANAGEMENT (CRUD) ─────────────────────────────── --}}
+        <div id="crop-management" class="section-anchor card mb-4">
+            <div class="card-header text-white" style="background:#2e7d32;">
+                <i class="fas fa-seedling me-2"></i>Crop Management — Encoding Reversed LHM Nutrient Deficiency
+            </div>
+            <div class="card-body">
+
+                <p>
+                    The <strong>Crops</strong> module lets you manually define crop-specific nutrient thresholds
+                    used by the Fertilizer Calculator. Navigate to
+                    <a href="{{ route('crops.index') }}" class="text-success fw-semibold">
+                        <i class="fas fa-arrow-up-right-from-square fa-xs"></i> Crops
+                    </a>
+                    in the sidebar to add, edit, or deactivate crops.
+                </p>
+
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-triangle-exclamation me-1"></i>
+                    <strong>Important:</strong> Crop threshold values must be entered in <strong>kg/ha</strong>.
+                    All soil nutrient readings are also expressed in kg/ha for comparison.
+                </div>
+
+                {{-- What is LHM Encoding ─────────────────────────────────── --}}
+                <h6 id="crop-lhm-encoding" class="section-anchor fw-bold mb-3">
+                    <i class="fas fa-arrows-rotate me-1 text-warning"></i>Understanding the LHM Column Encoding
+                </h6>
+                <p class="small">
+                    The crop table columns <code>n_low</code>, <code>n_med</code>, <code>n_high</code>
+                    are <strong>fertilizer target ppm values</strong> — not soil classification thresholds.
+                    Each column stores the recommended application rate for that soil status level.
+                    Because <em>Low soil status = most deficient = needs the most fertilizer</em>,
+                    the columns decrease from <code>n_low</code> (highest) to <code>n_high</code> (lowest).
+                </p>
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm align-middle text-center" style="font-size:.83rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-start">Column</th>
+                                <th>Applied When Soil Status Is</th>
+                                <th>Fertilizer Rate</th>
+                                <th>Example — BATAO Nitrogen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-danger">
+                                <td class="text-start fw-semibold"><code>n_low</code></td>
+                                <td><span class="badge bg-danger">Low</span> — soil is deficient</td>
+                                <td>Highest — most fertilizer needed</td>
+                                <td>45 kg/ha → 45 ÷ 0.46 = 97.83 kg Urea/ha</td>
+                            </tr>
+                            <tr class="table-warning">
+                                <td class="text-start fw-semibold"><code>n_med</code></td>
+                                <td><span class="badge bg-warning text-dark">Medium</span> — moderate</td>
+                                <td>Moderate — standard application</td>
+                                <td>40 kg/ha → 40 ÷ 0.46 = 86.96 kg Urea/ha</td>
+                            </tr>
+                            <tr class="table-success">
+                                <td class="text-start fw-semibold"><code>n_high</code></td>
+                                <td><span class="badge bg-success">High</span> — soil is sufficient</td>
+                                <td>Lowest — maintenance only</td>
+                                <td>35 kg/ha → 35 ÷ 0.46 = 76.09 kg Urea/ha</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info small mb-3">
+                    <i class="fas fa-circle-info me-1"></i>
+                    <strong>Rule of thumb for data entry:</strong>
+                    Enter the <em>highest ppm value</em> in <code>n_low</code> (most fertilizer, for deficient soil),
+                    a moderate value in <code>n_med</code>, and the <em>smallest value</em> in <code>n_high</code>
+                    (limited/maintenance rate for sufficient soil).
+                    Values must decrease: <code>n_low &gt; n_med &gt; n_high</code>.
+                    Even High-status soils still receive a small application — the technician never tells
+                    the farmer to apply zero, just a reduced maintenance rate.
+                </div>
+
+                {{-- Steps to add a crop ──────────────────────────────────── --}}
+                <h6 class="fw-bold mb-3">
+                    <i class="fas fa-plus-circle me-1 text-success"></i>How to Add or Edit a Crop
+                </h6>
+                @php
+                $cropSteps = [
+                    'Go to <strong>Crops</strong> in the sidebar and click <strong>Add Crop</strong>.',
+                    'Enter the <strong>Crop Name</strong> (e.g., Rice, Corn, Garlic) and an optional description.',
+                    'Set the <strong>Status</strong> to <em>Active</em> so it appears in the Fertilizer Calculator dropdown. Inactive crops are hidden from analysis.',
+                    'Enter <strong>pH thresholds</strong> (Low / Medium / High) on the 0–14 scale to define the acceptable pH range for the crop.',
+                    'Enter <strong>N, P, K thresholds</strong> in <strong>kg/ha</strong>. Remember: <code>Low = sufficiency threshold</code>, <code>Medium = marginal</code>, <code>High = critical</code>.',
+                    'Click <strong>Save</strong>. The crop is immediately available in the Fertilizer Calculator.',
+                ];
+                @endphp
+                @foreach($cropSteps as $i => $s)
+                <div class="step-row">
+                    <span class="step-badge">{{ $i + 1 }}</span>
+                    <p>{!! $s !!}</p>
+                </div>
+                @endforeach
+
+                {{-- Fertilizer fractions reference ──────────────────── --}}
+                <h6 class="fw-bold mt-3 mb-2">
+                    <i class="fas fa-flask me-1 text-primary"></i>Fertilizer Product Fractions Reference
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="font-size:.82rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fertilizer</th>
+                                <th class="text-center">Grade</th>
+                                <th class="text-center">N fraction</th>
+                                <th class="text-center">P fraction</th>
+                                <th class="text-center">K fraction</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Urea</strong></td>
+                                <td class="text-center">46-0-0</td>
+                                <td class="text-center fw-bold text-success">0.46</td>
+                                <td class="text-center text-muted">—</td>
+                                <td class="text-center text-muted">—</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Complete</strong></td>
+                                <td class="text-center">14-14-14</td>
+                                <td class="text-center fw-bold text-success">0.14</td>
+                                <td class="text-center fw-bold text-primary">0.14</td>
+                                <td class="text-center fw-bold text-info">0.14</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ammonium Sulfate</strong></td>
+                                <td class="text-center">21-0-0</td>
+                                <td class="text-center fw-bold text-success">0.21</td>
+                                <td class="text-center text-muted">—</td>
+                                <td class="text-center text-muted">—</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DAP</strong></td>
+                                <td class="text-center">18-46-0</td>
+                                <td class="text-center fw-bold text-success">0.18</td>
+                                <td class="text-center fw-bold text-primary">0.46</td>
+                                <td class="text-center text-muted">—</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MOP (Muriate of Potash)</strong></td>
+                                <td class="text-center">0-0-60</td>
+                                <td class="text-center text-muted">—</td>
+                                <td class="text-center text-muted">—</td>
+                                <td class="text-center fw-bold text-info">0.60</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TSP (Triple Superphosphate)</strong></td>
+                                <td class="text-center">0-46-0</td>
+                                <td class="text-center text-muted">—</td>
+                                <td class="text-center fw-bold text-primary">0.46</td>
+                                <td class="text-center text-muted">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <i class="fas fa-circle-info me-1"></i>
+                    The Fertilizer Calculator uses these fractions to convert the pure-nutrient deficit (kg/ha)
+                    into the amount of fertilizer <em>product</em> to apply:
+                    <code>product kg/ha = deficit kg/ha ÷ fraction</code>.
+                </div>
+
+            </div>
+        </div>
+
+        {{-- ── CROP REQUIREMENTS REFERENCE ───────────────────────── --}}
+        <div id="crop-requirements" class="section-anchor card mb-4">
+            <div class="card-header text-white" style="background:#1b5e20;">
+                <i class="fas fa-leaf me-2"></i>Crop pH &amp; NPK Requirements Reference
+            </div>
+            <div class="card-body">
+                <p>
+                    The <a href="{{ route('crops.requirements') }}" class="text-success fw-semibold">
+                        <i class="fas fa-arrow-up-right-from-square fa-xs"></i> Crop Requirements
+                    </a> page lists all crops in the system with their acceptable pH, N, P, and K ranges.
+                    Use it to <strong>manually verify</strong> the fertilizer calculator results in Excel.
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="fw-bold"><i class="fas fa-file-csv text-warning me-1"></i>Export to Excel workflow</h6>
+                            <ol class="mb-0 small">
+                                <li>Open <strong>Crop Requirements</strong> from the sidebar.</li>
+                                <li>Click <strong>Export to Excel / CSV</strong> to download the reference table.</li>
+                                <li>Open the downloaded CSV in Excel or Google Sheets.</li>
+                                <li>Compare your soil test values (pH, N kg/ha, P kg/ha, K kg/ha) against the Min–Max columns for each crop.</li>
+                                <li>Apply the formulas in this guide to verify the calculator output.</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="fw-bold"><i class="fas fa-table-cells text-success me-1"></i>Manual verification in Excel</h6>
+                            <p class="small mb-2">Example Excel formulas (soil in row 2, crop requirements in reference sheet):</p>
+                            <div class="bg-light border rounded p-2 font-monospace small">
+                                <div>=MAX(0, (C2-B2)*2)</div>
+                                <div class="text-muted">Deficit kg/ha for N</div>
+                                <br>
+                                <div>=D2/(50*0.46)</div>
+                                <div class="text-muted">TSP bags/ha for P deficit</div>
+                                <br>
+                                <div>=E2/(50*0.60)</div>
+                                <div class="text-muted">MOP bags/ha for K deficit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── SAMPLE WORKFLOW ───────────────────────────────────── --}}
+        <div id="samples-workflow" class="section-anchor card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-diagram-project me-2"></i>Full Sample Workflow
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                    <div class="text-center">
+                        <div class="badge bg-secondary p-2" style="font-size:.8rem;">Create Sample</div>
+                    </div>
+                    <i class="fas fa-arrow-right text-muted"></i>
+                    <div class="text-center">
+                        <div class="badge bg-dark p-2" style="font-size:.8rem;">pH Test (CPR)</div>
+                    </div>
+                    <i class="fas fa-arrow-right text-muted"></i>
+                    <div class="text-center">
+                        <div class="badge bg-dark p-2" style="font-size:.8rem;">pH Step 2 (if needed)</div>
+                    </div>
+                    <i class="fas fa-arrow-right text-muted"></i>
+                    <div class="text-center">
+                        <div class="badge bg-success p-2" style="font-size:.8rem;">Nitrogen</div>
+                    </div>
+                    <i class="fas fa-arrow-right text-muted"></i>
+                    <div class="text-center">
+                        <div class="badge bg-primary p-2" style="font-size:.8rem;">Phosphorus</div>
+                    </div>
+                    <i class="fas fa-arrow-right text-muted"></i>
+                    <div class="text-center">
+                        <div class="badge bg-info p-2" style="font-size:.8rem;">Potassium</div>
+                    </div>
+                    <i class="fas fa-arrow-right text-muted"></i>
+                    <div class="text-center">
+                        <div class="badge bg-warning text-dark p-2" style="font-size:.8rem;">Fertilizer Rec.</div>
+                    </div>
+                </div>
+                <p class="text-muted small mb-0">
+                    Each test page shows a <strong>progress pill bar</strong> at the top so you always know which step is active and which are complete
+                    (<i class="fas fa-check-circle text-success fa-xs"></i> = done,
+                    <i class="fas fa-circle-dot fa-xs text-primary"></i> = active,
+                    <i class="fas fa-circle fa-xs text-muted"></i> = pending).
+                </p>
+            </div>
+        </div>
+
+        {{-- ── USER ROLES ─────────────────────────────────────────── --}}
+        <div id="roles" class="section-anchor card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <i class="fas fa-users me-2"></i>User Roles
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="fw-bold"><i class="fas fa-user-shield text-danger me-1"></i>Admin</h6>
+                            <ul class="mb-0 small">
+                                <li>Can view <strong>all</strong> soil samples from all technicians</li>
+                                <li>Can manage user accounts (create, deactivate)</li>
+                                <li>Can export full dataset and Phase 2 data</li>
+                                <li>Has access to the Admin Dashboard with aggregate stats</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="fw-bold"><i class="fas fa-user text-success me-1"></i>Technician</h6>
+                            <ul class="mb-0 small">
+                                <li>Can view and test <strong>their own</strong> samples only</li>
+                                <li>Can create new samples and manage farmers</li>
+                                <li>Runs all 4 BSWM tests per sample</li>
+                                <li>Can export their own sample reports</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── QUICK REFERENCE ───────────────────────────────────── --}}
+        <div id="reference" class="section-anchor card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-book-open me-2"></i>Quick Reference Numbers
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-info">
+                            <tr><th>Item</th><th>Value</th><th>Notes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Soil sample volume</td><td>~0.5 g</td><td>1st scratch mark in test tube</td></tr>
+                            <tr><td>Reagent volume</td><td>~1 mL</td><td>2nd scratch mark</td></tr>
+                            <tr><td>Reaction timer</td><td>8 min total</td><td>1 min mix + 2 wait + 1 mix + 5 wait</td></tr>
+                            <tr><td>Captures per test</td><td>3</td><td>Averaged via RGB mean</td></tr>
+                            <tr><td>Crosshair zone</td><td>70 × 70 px</td><td>Center of 320×240 camera frame</td></tr>
+                            <tr><td>Commercial fertilizer bag</td><td>50 kg</td><td>Standard Philippine bag size</td></tr>
+                            <tr><td>BCG range</td><td>pH 4.0–5.8</td><td>Acidic soils</td></tr>
+                            <tr><td>BTB range</td><td>pH 5.8–7.6</td><td>Near-neutral to neutral soils</td></tr>
+                            <tr><td>CPR final range</td><td>pH 5.4–5.8</td><td>No Step 2 needed</td></tr>
+                            <tr><td>Retest threshold</td><td>pH &lt; 4.0 or &gt; 7.6</td><td>Outside indicator range</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── TROUBLESHOOTING ───────────────────────────────────── --}}
+        <div id="troubleshooting" class="section-anchor card mb-4">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-wrench me-2"></i>Troubleshooting
+            </div>
+            <div class="card-body">
+                <div class="accordion accordion-flush" id="troubleAccordion">
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#t1">
+                                Camera does not start
+                            </button>
+                        </h2>
+                        <div id="t1" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                            <div class="accordion-body small">
+                                <ul class="mb-0">
+                                    <li>Make sure you clicked "Allow" when the browser asked for camera permission.</li>
+                                    <li>Check that no other application (e.g., video call software) is using the camera.</li>
+                                    <li>Try refreshing the page and clicking <strong>Start Camera</strong> again.</li>
+                                    <li>Use Chrome or Edge for best webcam support.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#t2">
+                                Capture button does not become active
+                            </button>
+                        </h2>
+                        <div id="t2" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                            <div class="accordion-body small">
+                                Capture buttons unlock <strong>sequentially</strong>. Capture 2 only becomes available after Capture 1 is saved, and Capture 3 after Capture 2. Make sure the previous capture completed successfully (look for the green "Done" text).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#t3">
+                                pH test shows "RETEST" outcome
+                            </button>
+                        </h2>
+                        <div id="t3" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                            <div class="accordion-body small">
+                                <ul class="mb-0">
+                                    <li>The computed pH from CPR is outside the 4.0–7.6 readable range.</li>
+                                    <li>Prepare a fresh soil sample and repeat the CPR step.</li>
+                                    <li>Ensure the test tube was clean and dry before use.</li>
+                                    <li>Verify the reagent is not expired or contaminated.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#t4">
+                                Step 2 outcome shows "inconsistent"
+                            </button>
+                        </h2>
+                        <div id="t4" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                            <div class="accordion-body small">
+                                The difference between Step 1 (CPR) and Step 2 (BCG/BTB) pH values exceeds 0.5 units. This usually means:
+                                <ul class="mb-0 mt-1">
+                                    <li>The soil sample preparation was inconsistent between steps.</li>
+                                    <li>The wrong Step 2 solution was used (BCG vs BTB).</li>
+                                    <li>Timing was not followed (not enough mixing or standing time).</li>
+                                </ul>
+                                Use the Step 2 pH value as the final result, but note the inconsistency in your report.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#t5">
+                                Fertilizer calculator shows 0 bags needed
+                            </button>
+                        </h2>
+                        <div id="t5" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                            <div class="accordion-body small">
+                                This means the soil's measured nutrient level <strong>meets or exceeds</strong> what the selected crop requires — no additional fertilizer is needed for that nutrient. Check that you selected the correct crop and that all 3 N/P/K tests are completed (not just pH).
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+            <div class="px-3 py-2 border-top bg-light no-print">
+               
+                <div class="mt-2 p-2 rounded border" style="background:#fff8e1;">
+                    <small>
+                        <i class="fas fa-external-link-alt me-1 text-warning"></i>
+                        <strong>Official References (verified):</strong>
+                        <ul class="mb-0 mt-1 ps-3" style="line-height:1.9;">
+                            <li>
+                                <a href="http://www.knowledgebank.irri.org/step-by-step-production/growth/soil-fertility" target="_blank" rel="noopener">
+                                    IRRI Rice Knowledge Bank — Soil Fertility
+                                </a>
+                                — Confirms Rice pH <strong>5.0–6.5</strong>, Olsen P &gt;10 mg/kg
+                                <span class="badge bg-success ms-1" style="font-size:.7rem;">Rice pH confirmed</span>
+                            </li>
+                            <li>
+                                <a href="https://www.bswm.da.gov.ph/download/bswm-fertilizer-recommendation/" target="_blank" rel="noopener">
+                                    BSWM Fertilizer Recommendation Guide
+                                </a>
+                                — DA Bureau of Soils and Water Management (official fertilizer guide per soil test)
+                                <span class="badge bg-primary ms-1" style="font-size:.7rem;">BSWM official</span>
+                            </li>
+                            <li>
+                                <a href="https://www.pca.gov.ph/images/cocotech/PNS_BAFS_238_2018_Code_of_Good_Agricultural_Practices_for_Coconut.pdf" target="_blank" rel="noopener">
+                                    PCA — PNS/BAFS 238:2018 Code of GAP for Coconut (PDF)
+                                </a>
+                                — Philippine National Standard; confirms Coconut pH <strong>5.0–8.0</strong>
+                                <span class="badge bg-success ms-1" style="font-size:.7rem;">Coconut pH confirmed</span>
+                            </li>
+                            <li>
+                                <a href="https://philcoffeeboard.com/7-steps-in-planting-coffee/" target="_blank" rel="noopener">
+                                    Philippine Coffee Board — 7 Steps in Planting Coffee
+                                </a>
+                                — Confirms Coffee pH <strong>5.0–6.5</strong>
+                                <span class="badge bg-success ms-1" style="font-size:.7rem;">Coffee pH confirmed</span>
+                            </li>
+                            <li>
+                                <a href="https://cagayanvalley.da.gov.ph/wp-content/uploads/2018/02/corn_techno_guide_final.pdf" target="_blank" rel="noopener">
+                                    DA Cagayan Valley — Corn Techno Guide (PDF)
+                                </a>
+                                — Confirms Corn optimal pH range (5.3–7.3)
+                                <span class="badge bg-warning text-dark ms-1" style="font-size:.7rem;">Corn pH within range</span>
+                            </li>
+                            <li>
+                                <a href="https://www.bswm.da.gov.ph/program/sha-nsst/" target="_blank" rel="noopener">
+                                    BSWM — National Soil Sampling &amp; Testing (Rice &amp; Corn)
+                                </a>
+                                — BSWM Soil Health Assessment Program; soil pH, N, P, K status maps
+                                <span class="badge bg-primary ms-1" style="font-size:.7rem;">BSWM official</span>
+                            </li>
+                        </ul>
+                        <span class="text-muted d-block mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <strong>Note on NPK values:</strong> BSWM, PhilRice, and IRRI express crop nutrient requirements in kg/ha or %.
+                            The kg/ha ranges shown here are the soil-available nutrient thresholds consistent with those guidelines.
+                            For a certified crop-specific soil analysis, submit samples to the nearest
+                            <a href="https://www.bswm.da.gov.ph" target="_blank" rel="noopener">BSWM</a> or DA regional laboratory.
+                        </span>
+                    </small>
+                </div>
+            </div>
+        <div class="text-muted small text-center mb-4">
+            <i class="fas fa-info-circle me-1"></i>
+            For technical issues or account problems, contact your system administrator.
+        </div>
+
+    </div>{{-- /col --}}
+</div>{{-- /row --}}
+
+@endsection
