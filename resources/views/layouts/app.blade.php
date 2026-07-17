@@ -252,8 +252,9 @@
 
             <div class="collapse navbar-collapse" id="navbarContent">
 
-                {{-- Left: main nav links (authenticated) --}}
-                <ul class="navbar-nav me-auto">
+                {{-- Left: main nav links — mobile only. On desktop the sidebar is the
+                     single source of navigation, so these would just duplicate it. --}}
+                <ul class="navbar-nav me-auto d-md-none">
                     @auth
                         @if(Auth::user()->isAdmin())
                             <li class="nav-item">
