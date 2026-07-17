@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\AnalysisController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SampleController;
@@ -24,19 +23,17 @@ use App\Http\Controllers\CropRequirementsController;
 use App\Http\Controllers\CropController;
 use Illuminate\Support\Facades\Route;
 
-// Redirect root to login or dashboard
+// Root: authenticated users go to their dashboard, guests see the public map.
 Route::get('/', function () {
     return auth()->check()
         ? redirect()->route(auth()->user()->isAdmin() ? 'admin.dashboard' : 'dashboard')
-        : redirect()->route('login');
+        : redirect()->route('public.map');
 });
 
 // ── Guest routes ─────────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/login',    [LoginController::class,    'show'])->name('login');
     Route::post('/login',   [LoginController::class,    'login']);
-    Route::get('/register', [RegisterController::class, 'show'])->name('register');
-    Route::post('/register',[RegisterController::class, 'register']);
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');

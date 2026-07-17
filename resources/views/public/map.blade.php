@@ -1,7 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.public')
 @section('title', 'Public Map')
 @section('content')
 
+<div class="container py-4">
 <div class="row mb-3">
     <div class="col-md-8">
         <h2><i class="fas fa-map me-2"></i>Interactive Farm Map</h2>
@@ -48,6 +49,7 @@
     <div class="card-body p-0">
         <div id="publicMap" style="height: 65vh; border-radius: 10px;"></div>
     </div>
+</div>
 </div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />

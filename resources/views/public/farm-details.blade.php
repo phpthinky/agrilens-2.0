@@ -1,6 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.public')
 @section('title', $farm->farm_name)
 @section('content')
+
+<div class="container py-4">
 
 <div class="row mb-3">
     <div class="col-md-8">
@@ -101,5 +103,6 @@
             <p class="text-muted mb-0">No soil analyses recorded yet.</p>
         @endforelse
     </div>
+</div>
 </div>
 @endsection
