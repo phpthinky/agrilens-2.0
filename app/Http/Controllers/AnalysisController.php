@@ -182,16 +182,15 @@ class AnalysisController extends Controller
     {
         $this->authoriseSample($sample);
 
+        // Digital Probe hardware measures N/P/K only — no pH sensor.
         $request->validate([
             'probe_id' => 'required|string|max:100',
-            'ph_level' => 'required|numeric|between:0,14',
             'nitrogen_level' => 'required|numeric|min:0',
             'phosphorus_level' => 'required|numeric|min:0',
             'potassium_level' => 'required|numeric|min:0',
             'probe_raw_payload' => 'nullable|string',
         ]);
 
-        $ph = (float) $request->ph_level;
         $n = (float) $request->nitrogen_level;
         $p = (float) $request->phosphorus_level;
         $k = (float) $request->potassium_level;
@@ -202,12 +201,12 @@ class AnalysisController extends Controller
             'analysis_type' => 'probe',
             'probe_id' => $request->probe_id,
             'probe_raw_payload' => $rawPayload,
-            'ph_level' => $ph,
+            'ph_level' => null,
             'nitrogen_level' => $n,
             'phosphorus_level' => $p,
             'potassium_level' => $k,
-            'fertility_score' => $this->fertilizer->computeFertilityScore($ph, $n, $p, $k),
-            'recommended_crop' => Crop::topMatchName($ph, $n, $p, $k),
+            'fertility_score' => $this->fertilizer->computeFertilityScore(null, $n, $p, $k),
+            'recommended_crop' => Crop::topMatchName(null, $n, $p, $k),
             'analyzed_at' => now(),
         ]);
 

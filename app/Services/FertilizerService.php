@@ -8,12 +8,15 @@ namespace App\Services;
  */
 class FertilizerService
 {
-    public function recommend(float $ph, float $n, float $p, float $k): array
+    /** $ph is nullable because Digital Probe readings don't measure pH. */
+    public function recommend(?float $ph, float $n, float $p, float $k): array
     {
         $rec = ['urea_kgha' => 0.0, 'tsp_kgha' => 0.0, 'mop_kgha' => 0.0, 'notes' => []];
 
         // pH assessment
-        if ($ph < 5.5) {
+        if ($ph === null) {
+            $rec['notes'][] = 'pH was not measured (Digital Probe reading) — recommendations below are based on N/P/K only.';
+        } elseif ($ph < 5.5) {
             $rec['notes'][] = 'Soil pH is acidic — this must be addressed, as some crops may not thrive or may not perform at their best under acidic soil conditions.';
         } elseif ($ph > 7.5) {
             $rec['notes'][] = 'Soil is alkaline (pH > 7.5). Consider incorporating organic matter or elemental sulfur to lower pH.';
@@ -88,14 +91,13 @@ class FertilizerService
         return 'Medium';
     }
 
-    public function computeFertilityScore(float $ph, float $n, float $p, float $k): int
+    /**
+     * $ph is nullable because Digital Probe readings don't measure pH — when
+     * absent, the score is computed from N/P/K alone, with their weights
+     * (0.35 + 0.25 + 0.25 = 0.85) renormalized to sum to 1.0.
+     */
+    public function computeFertilityScore(?float $ph, float $n, float $p, float $k): int
     {
-        $phScore = match (true) {
-            $ph >= 6.0 && $ph <= 7.0 => 100,
-            $ph >= 5.5 && $ph <= 7.5 => 70,
-            $ph >= 5.0 && $ph <= 8.0 => 40,
-            default => 10,
-        };
         $nScore = match (true) {
             $n >= 60  && $n <= 150  => 100,
             $n >= 45  && $n < 60    => 80,
@@ -115,6 +117,18 @@ class FertilizerService
             $k >= 10              => 50,
             default               => 15,
         };
+
+        if ($ph === null) {
+            return (int) round(($nScore * 0.35 + $pScore * 0.25 + $kScore * 0.25) / 0.85);
+        }
+
+        $phScore = match (true) {
+            $ph >= 6.0 && $ph <= 7.0 => 100,
+            $ph >= 5.5 && $ph <= 7.5 => 70,
+            $ph >= 5.0 && $ph <= 8.0 => 40,
+            default => 10,
+        };
+
         return (int) round($nScore * 0.35 + $pScore * 0.25 + $kScore * 0.25 + $phScore * 0.15);
     }
 }

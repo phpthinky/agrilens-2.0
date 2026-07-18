@@ -77,7 +77,7 @@ class SampleController extends Controller
     $nStatus = $pStatus = $kStatus = null;
 
     if ($sample->isAnalyzed()) {
-        $ph = (float) $sample->ph_level;
+        $ph = $sample->ph_level !== null ? (float) $sample->ph_level : null;
         $n  = (float) $sample->nitrogen_level;
         $p  = (float) $sample->phosphorus_level;
         $k  = (float) $sample->potassium_level;
@@ -126,7 +126,7 @@ class SampleController extends Controller
         $nStatus  = $pStatus = $kStatus = null;
 
         if ($sample->isAnalyzed()) {
-            $ph = (float)$sample->ph_level;
+            $ph = $sample->ph_level !== null ? (float) $sample->ph_level : null;
             $n  = (float)$sample->nitrogen_level;
             $p  = (float)$sample->phosphorus_level;
             $k  = (float)$sample->potassium_level;
@@ -158,7 +158,7 @@ class SampleController extends Controller
         $scheduleCrop   = null;
 
         if ($sample->isAnalyzed()) {
-            $ph = (float)$sample->ph_level;
+            $ph = $sample->ph_level !== null ? (float) $sample->ph_level : null;
             $n  = (float)$sample->nitrogen_level;
             $p  = (float)$sample->phosphorus_level;
             $k  = (float)$sample->potassium_level;
@@ -188,10 +188,10 @@ class SampleController extends Controller
                 $nRemain  = $nTarget !== null ? max(0, $nTarget - $nFromDap) : null;
                 $ureaKgHa = $nRemain !== null ? round($nRemain / 0.46, 2) : null;
 
-                // pH suitability
+                // pH suitability (null when the sample has no pH reading, e.g. Digital Probe)
                 $cropPhLow  = (float)($crop->ph_low  ?? 0);
                 $cropPhHigh = (float)($crop->ph_high ?? 14);
-                $phInRange  = ($ph >= $cropPhLow && $ph <= $cropPhHigh);
+                $phInRange  = $ph !== null ? ($ph >= $cropPhLow && $ph <= $cropPhHigh) : null;
 
                 $scoredCrops[] = [
                     'crop'      => $crop,
@@ -285,7 +285,7 @@ public function fertilizerSchedule(
     $basalFertInfo = \App\Services\FertilizerScheduleService::BASAL_FERTILIZERS['urea'];
 
     if ($sample->isAnalyzed()) {
-        $ph = (float) $sample->ph_level;
+        $ph = $sample->ph_level !== null ? (float) $sample->ph_level : null;
         $n  = (float) $sample->nitrogen_level;
         $p  = (float) $sample->phosphorus_level;
         $k  = (float) $sample->potassium_level;

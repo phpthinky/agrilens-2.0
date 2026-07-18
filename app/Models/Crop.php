@@ -40,16 +40,22 @@ class Crop extends Model
     /**
      * Return the top-matching active crop name for a soil reading.
      * Uses ph_med / n_med / p_med / k_med as target values for scoring.
+     *
+     * $ph is nullable because Digital Probe readings don't measure pH — when
+     * absent, matching is based on N/P/K deviation alone.
      */
-    public static function topMatchName(float $ph, float $n, float $p, float $k): ?string
+    public static function topMatchName(?float $ph, float $n, float $p, float $k): ?string
     {
+        $phTerm = $ph !== null ? 'ABS(COALESCE(ph_med, 7) - ?) +' : '';
+        $bindings = $ph !== null ? [$ph, $n, $p, $k] : [$n, $p, $k];
+
         $crop = static::active()
             ->selectRaw("name,
-                ABS(COALESCE(ph_med, 7) - ?) +
+                {$phTerm}
                 ABS(COALESCE(n_med,  0) - ?) +
                 ABS(COALESCE(p_med,  0) - ?) +
                 ABS(COALESCE(k_med,  0) - ?) AS deviation",
-                [$ph, $n, $p, $k])
+                $bindings)
             ->orderBy('deviation')
             ->orderBy('name')
             ->first();

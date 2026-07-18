@@ -139,10 +139,12 @@
 
 <h2>Soil Analysis Results</h2>
 <div class="result-row">
+    @if($sample->ph_level !== null)
     <div class="result-card" style="display: inline-block; max-width: 25%;margin-top: 50px;">
         <div class="label">Soil pH</div>
         <div class="value" style="color:#1565c0;">{{ number_format($sample->ph_level,2) }}</div>
     </div>
+    @endif
     <div class="result-card"  style="display: inline-block; max-width: 25%;">
         <div class="label">Nitrogen (N)</div>
         <div class="value" style="color:#2e7d32;">{{ number_format($sample->nitrogen_level,1) }}</div>
@@ -290,6 +292,7 @@ $statusRows = [
         <tr><th>Parameter</th><th>Status</th><th>Interpretation</th></tr>
     </thead>
     <tbody>
+        @if($sample->ph_level !== null)
         <tr>
             <td>Soil pH</td>
             <td><span class="badge badge-{{ $sample->ph_level < 5.5 ? 'danger' : ($sample->ph_level > 7.0 ? 'info' : 'success') }}">
@@ -297,6 +300,13 @@ $statusRows = [
             </span></td>
             <td>{{ $sample->ph_level < 5.5 ? 'Acidic — soil pH must be addressed' : ($sample->ph_level > 7.5 ? 'Alkaline — organic matter or sulfur' : 'Within optimal range') }}</td>
         </tr>
+        @else
+        <tr>
+            <td>Soil pH</td>
+            <td><span class="badge badge-secondary">N/A</span></td>
+            <td>Not measured (Digital Probe reading).</td>
+        </tr>
+        @endif
         @foreach($statusRows as $row)
         <tr>
             <td>{{ $row['label'] }}</td>
@@ -314,9 +324,14 @@ $statusRows = [
 @if(!empty($fertRec))
 <h2>Fertilizer Recommendations</h2>
 
-@if($sample->ph_level < 5.5)
+@if($sample->ph_level !== null && $sample->ph_level < 5.5)
 <div class="note-box">
     <strong>&#9888; pH Advisory:</strong> Soil pH is acidic — this must be addressed, as some crops may not thrive or may not perform at their best under acidic soil conditions.
+</div>
+@endif
+@if($sample->ph_level === null)
+<div class="note-box">
+    <strong>&#8505; Note:</strong> This analysis was taken via Digital Probe, which does not measure pH. Fertilizer recommendations below are based on N/P/K readings only.
 </div>
 @endif
 
@@ -415,9 +430,11 @@ $statusRows = [
             $nb = $statusBadge($row['nSt']);
             $pb = $statusBadge($row['pSt']);
             $kb = $statusBadge($row['kSt']);
-            $phNote = $row['phInRange']
-                ? '&#10003; pH suitable ('.$row['phRange'].')'
-                : '&#9888; pH out of range ('.$row['phRange'].')';
+            $phNote = match (true) {
+                $row['phInRange'] === null => '&mdash; pH not measured',
+                $row['phInRange'] => '&#10003; pH suitable ('.$row['phRange'].')',
+                default => '&#9888; pH out of range ('.$row['phRange'].')',
+            };
         @endphp
         <tr style="{{ $i === 0 ? 'background:#fffde7;' : '' }}">
             <td style="text-align:center;color:#888;">{{ $i + 1 }}</td>

@@ -208,6 +208,11 @@ $resultParams = [
     'phosphorus' => ['label'=>'Phosphorus (P)', 'value'=>$sample->phosphorus_level, 'unit'=>'kg/ha', 'hex'=>$sample->phosphorus_color_hex],
     'potassium'  => ['label'=>'Potassium (K)',  'value'=>$sample->potassium_level,  'unit'=>'kg/ha', 'hex'=>$sample->potassium_color_hex],
 ];
+// Digital Probe readings have no pH value — drop that card instead of showing a misleading 0.00
+if ($sample->ph_level === null) {
+    unset($resultParams['ph']);
+}
+$colWidth = count($resultParams) === 3 ? 4 : 3;
 $fertilizerSvc = app(\App\Services\FertilizerService::class);
 @endphp
 <div class="row mb-4">
@@ -224,7 +229,7 @@ $fertilizerSvc = app(\App\Services\FertilizerService::class);
             default         => 'secondary'
         };
     @endphp
-    <div class="col-md-3 mb-3">
+    <div class="col-md-{{ $colWidth }} mb-3">
         <div class="card h-100 border-{{ $bsColor }}">
             <div class="card-header bg-{{ $bsColor }} text-white text-center py-2">
                 <strong>{{ $rp['label'] }}</strong>
@@ -371,11 +376,13 @@ $fertilizerSvc = app(\App\Services\FertilizerService::class);
                         <tbody>
                             @php
                             $calcParams = [
-                                ['key'=>'ph',         'label'=>'Soil pH',    'value'=>(float)$sample->ph_level],
                                 ['key'=>'nitrogen',   'label'=>'Nitrogen',   'value'=>(float)$sample->nitrogen_level],
                                 ['key'=>'phosphorus', 'label'=>'Phosphorus', 'value'=>(float)$sample->phosphorus_level],
                                 ['key'=>'potassium',  'label'=>'Potassium',  'value'=>(float)$sample->potassium_level],
                             ];
+                            if ($sample->ph_level !== null) {
+                                array_unshift($calcParams, ['key'=>'ph', 'label'=>'Soil pH', 'value'=>(float)$sample->ph_level]);
+                            }
                             @endphp
                             @foreach($calcParams as $cp)
                             @php
@@ -490,23 +497,30 @@ $fertilizerSvc = app(\App\Services\FertilizerService::class);
                         $pct      = round($row['score'] / 3 * 100);
                         $barColor = $pct >= 75 ? 'success' : ($pct >= 50 ? 'warning' : ($pct >= 25 ? 'info' : 'danger'));
 
-                        // pH acid-tolerance remark using crop ph_low and ph_high
+                        // pH acid-tolerance remark using crop ph_low and ph_high.
+                        // Digital Probe samples don't measure pH — skip the remark
+                        // entirely rather than judging suitability against a false 0.0.
                         $cropPhLow  = (float) ($row['crop']->ph_low  ?? 0);
                         $cropPhHigh = (float) ($row['crop']->ph_high ?? 14);
-                        $isAcidTolerant = $cropPhLow <= 5.5;
-                        $phInRange      = ($ph >= $cropPhLow && $ph <= $cropPhHigh);
 
-                        if ($isAcidTolerant) {
-                            $phRemark = $phInRange
-                                ? "Acid-tolerant crop (pH {$cropPhLow}–{$cropPhHigh}); soil pH is suitable."
-                                : "Acid-tolerant crop (pH {$cropPhLow}–{$cropPhHigh}); adjust soil pH to target range.";
+                        if ($sample->ph_level === null) {
+                            $phRemark = 'pH not measured (Digital Probe reading).';
                         } else {
-                            if ($ph < $cropPhLow) {
-                                $phRemark = "Not acid-tolerant (pH {$cropPhLow}–{$cropPhHigh}); soil pH is too acidic — soil pH must be addressed, as this crop may not thrive under acidic conditions.";
-                            } elseif ($ph > $cropPhHigh) {
-                                $phRemark = "Not acid-tolerant (pH {$cropPhLow}–{$cropPhHigh}); soil pH is too high.";
+                            $isAcidTolerant = $cropPhLow <= 5.5;
+                            $phInRange      = ($ph >= $cropPhLow && $ph <= $cropPhHigh);
+
+                            if ($isAcidTolerant) {
+                                $phRemark = $phInRange
+                                    ? "Acid-tolerant crop (pH {$cropPhLow}–{$cropPhHigh}); soil pH is suitable."
+                                    : "Acid-tolerant crop (pH {$cropPhLow}–{$cropPhHigh}); adjust soil pH to target range.";
                             } else {
-                                $phRemark = "Not acid-tolerant (pH {$cropPhLow}–{$cropPhHigh}); soil pH is within suitable range.";
+                                if ($ph < $cropPhLow) {
+                                    $phRemark = "Not acid-tolerant (pH {$cropPhLow}–{$cropPhHigh}); soil pH is too acidic — soil pH must be addressed, as this crop may not thrive under acidic conditions.";
+                                } elseif ($ph > $cropPhHigh) {
+                                    $phRemark = "Not acid-tolerant (pH {$cropPhLow}–{$cropPhHigh}); soil pH is too high.";
+                                } else {
+                                    $phRemark = "Not acid-tolerant (pH {$cropPhLow}–{$cropPhHigh}); soil pH is within suitable range.";
+                                }
                             }
                         }
 
@@ -817,7 +831,7 @@ const FERT_TYPE = {
     organic:          { n: 0.02, p: 0.015,k: 0.01, name: 'Organic Fertilizer (~2-1.5-1)' },
 };
 
-const SOIL_PH = {{ (float)$sample->ph_level }};
+const SOIL_PH = {{ $sample->ph_level !== null ? (float) $sample->ph_level : 'null' }};
 
 function calculateFertilizer() {
     const cropId = document.getElementById('cropSelect').value;
@@ -856,10 +870,15 @@ function calculateFertilizer() {
     const primaryIsDap = (fType === 'dap');
     const primaryIsMop = (fType === 'mop');
 
-    // pH note
+    // pH note (Digital Probe samples have no pH reading)
     let phNote = '';
-    if      (SOIL_PH < 5.5) phNote = 'Soil pH is acidic — this must be addressed, as some crops may not thrive under acidic conditions.';
-    else if (SOIL_PH > 7.5) phNote = 'Alkaline soil (pH > 7.5) — consider organic matter or elemental sulfur to lower pH.';
+    if (SOIL_PH === null) {
+        phNote = 'pH not measured (Digital Probe reading).';
+    } else if (SOIL_PH < 5.5) {
+        phNote = 'Soil pH is acidic — this must be addressed, as some crops may not thrive under acidic conditions.';
+    } else if (SOIL_PH > 7.5) {
+        phNote = 'Alkaline soil (pH > 7.5) — consider organic matter or elemental sulfur to lower pH.';
+    }
 
     const statusBadge = s => {
         const map = { Low: 'success', Medium: 'warning', High: 'danger' };
@@ -1003,7 +1022,7 @@ function calculateFertilizer() {
 
     const alertEl = document.getElementById('calcResultsAlert');
     alertEl.className = 'alert mt-3 mb-0 alert-' + (phNote
-        ? (SOIL_PH < 5.5 ? 'warning' : 'info') : 'success');
+        ? (SOIL_PH !== null && SOIL_PH < 5.5 ? 'warning' : 'info') : 'success');
     alertEl.innerHTML = phNote
         ? `<i class="fas fa-exclamation-triangle me-1"></i>${phNote}`
         : `<i class="fas fa-check-circle me-1"></i>Soil pH (${SOIL_PH}) is within acceptable range for most crops.`;

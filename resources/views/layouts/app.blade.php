@@ -280,16 +280,10 @@
 
                 <li class="sidebar-header">Data Management</li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('export') && !request()->routeIs('export.phase2') ? 'active' : '' }}" href="{{ route('export') }}">
+                    <a class="nav-link {{ request()->routeIs('export') ? 'active' : '' }}" href="{{ route('export') }}">
                         <i class="fa fa-file-csv me-2"></i> Full Export
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('export.phase2') ? 'active' : '' }}" href="{{ route('export.phase2') }}">
-                        <i class="fa fa-microchip me-2"></i> Phase 2 Export
-                    </a>
-                </li>
-
                 <li class="sidebar-header">System Operations</li>
 
                 <li class="nav-item">
@@ -307,7 +301,7 @@
                         <i class="fa fa-seedling me-2"></i> Crops
                     </a>
                 </li>
-                
+
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('help.index') ? 'active' : '' }}" href="{{ route('help.index') }}">
                         <i class="fa fa-circle-question me-2"></i> Help &amp; Guidelines

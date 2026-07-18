@@ -115,7 +115,6 @@ Route::middleware('auth')->group(function () {
 
     // Export
     Route::get('/export',                          [ExportController::class, 'export'])->name('export');
-    Route::get('/export/phase2',                   [ExportController::class, 'exportPhase2'])->name('export.phase2');
     Route::get('/samples/{sample}/export-excel',   [ExportController::class, 'exportSample'])->name('samples.export-excel');
 
     // Help & Guidelines

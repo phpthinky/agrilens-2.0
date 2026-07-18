@@ -85,7 +85,10 @@ class SoilSample extends Model
 
     public function isAnalyzed(): bool
     {
-        return !is_null($this->ph_level);
+        // analyzed_at (not ph_level) is the canonical "has final results" marker —
+        // Digital Probe samples don't measure pH, so ph_level can be null even
+        // once the sample is fully analyzed.
+        return !is_null($this->analyzed_at);
     }
 
     public function isPending(): bool

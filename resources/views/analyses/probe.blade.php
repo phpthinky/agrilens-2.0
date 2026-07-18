@@ -26,7 +26,7 @@
         <div class="card mt-3">
             <div class="card-header">Or paste payload manually</div>
             <div class="card-body">
-                <textarea id="manualPayload" class="form-control" rows="4" placeholder='{"v":1,"probe_id":"PROBE-001","ph":6.4,"n":42,"p":18.5,"k":150}'></textarea>
+                <textarea id="manualPayload" class="form-control" rows="4" placeholder='{"v":1,"probe_id":"PROBE-001","n":42,"p":18.5,"k":150}'></textarea>
                 <button type="button" id="parseManualBtn" class="btn btn-sm btn-outline-secondary mt-2">
                     <i class="fas fa-check me-1"></i>Parse Payload
                 </button>
@@ -52,11 +52,7 @@
                             <label class="form-label">Probe ID *</label>
                             <input type="text" name="probe_id" id="field_probe_id" class="form-control" required readonly>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">pH *</label>
-                            <input type="number" step="0.01" name="ph_level" id="field_ph" class="form-control" required>
-                        </div>
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <label class="form-label">Nitrogen (ppm) *</label>
                             <input type="number" step="0.01" name="nitrogen_level" id="field_n" class="form-control" required>
                         </div>
@@ -69,6 +65,7 @@
                             <input type="number" step="0.01" name="potassium_level" id="field_k" class="form-control" required>
                         </div>
                     </div>
+                    <div class="form-text mt-2">Digital Probe hardware does not measure pH.</div>
 
                     <input type="hidden" name="probe_raw_payload" id="field_raw_payload">
 
@@ -94,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
             qrStatus.textContent = 'Could not read a valid payload from that code/text.';
             return;
         }
-        const required = ['probe_id', 'ph', 'n', 'p', 'k'];
+        const required = ['probe_id', 'n', 'p', 'k'];
         const missing = required.filter(k => payload[k] === undefined || payload[k] === null);
         if (missing.length) {
             qrStatus.textContent = 'Payload is missing required field(s): ' + missing.join(', ');
@@ -102,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         document.getElementById('field_probe_id').value = payload.probe_id;
-        document.getElementById('field_ph').value = payload.ph;
         document.getElementById('field_n').value = payload.n;
         document.getElementById('field_p').value = payload.p;
         document.getElementById('field_k').value = payload.k;
