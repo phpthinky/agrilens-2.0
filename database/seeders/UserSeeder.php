@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
             ['username' => 'admin'],
             [
                 'email'     => 'admin@soilanalyzer.local',
-                'password'  => Hash::make('admin123'),
+                'password'  => Hash::make('admin123&%'),
                 'user_type' => 'admin',
             ]
         );

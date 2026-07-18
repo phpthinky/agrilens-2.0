@@ -42,6 +42,10 @@ class SampleController extends Controller
             abort(403);
         }
 
+        if ($sample->isPending()) {
+            return redirect()->route('analyses.choose', $sample);
+        }
+
     // Auto-compute when all 4 averaged colors are present and not yet analyzed
     if ($sample->allAveraged() && !$sample->isAnalyzed()) {
         $phTest = $sample->phTest;

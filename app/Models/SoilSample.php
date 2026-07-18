@@ -17,7 +17,7 @@ class SoilSample extends Model
         'ph_level', 'nitrogen_level', 'phosphorus_level', 'potassium_level',
         'fertility_score', 'ai_recommendation', 'gemini_crop_recommendation', 'recommended_crop',
         'tests_completed', 'analyzed_at',
-        'analysis_type', 'soil_type', 'probe_id', 'probe_raw_payload',
+        'analysis_type', 'soil_type', 'probe_id', 'probe_raw_payload', 'notes',
     ];
 
     protected function casts(): array
@@ -86,6 +86,16 @@ class SoilSample extends Model
     public function isAnalyzed(): bool
     {
         return !is_null($this->ph_level);
+    }
+
+    public function isPending(): bool
+    {
+        return $this->analysis_type === 'pending';
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('analysis_type', 'pending');
     }
 
     public function allAveraged(): bool

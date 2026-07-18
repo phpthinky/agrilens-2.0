@@ -48,8 +48,8 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>Soil Analyses ({{ $farm->soilSamples->count() }})</span>
-                @if(Route::has('analyses.choose'))
-                <a href="{{ route('analyses.choose', $farm) }}" class="btn btn-sm btn-success">
+                @if(Route::has('samples.create'))
+                <a href="{{ route('samples.create', $farm) }}" class="btn btn-sm btn-success">
                     <i class="fas fa-plus me-1"></i>Create Analysis
                 </a>
                 @endif

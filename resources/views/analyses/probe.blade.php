@@ -1,14 +1,15 @@
 @extends('layouts.app')
 @section('title', 'Digital Probe Analysis')
+@section('page-title', 'Digital Probe Analysis')
 @section('content')
 
 <div class="row mb-3">
     <div class="col-md-8">
         <h2><i class="fas fa-qrcode me-2"></i>Digital Probe Analysis</h2>
-        <p class="text-muted mb-0">For <strong>{{ $farm->farm_name }}</strong> — {{ $farm->farmer->full_name }}</p>
+        <p class="text-muted mb-0">{{ $sample->sample_name }} — {{ $sample->farm->farm_name }} — {{ $sample->farm->farmer->full_name }}</p>
     </div>
     <div class="col-md-4 text-end">
-        <a href="{{ route('analyses.choose', $farm) }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+        <a href="{{ route('analyses.choose', $sample) }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
     </div>
 </div>
 
@@ -42,26 +43,14 @@
                     <p>Waiting for a scan...</p>
                 </div>
 
-                <form method="POST" action="{{ route('analyses.store.probe', $farm) }}" id="reviewForm" class="d-none">
+                <form method="POST" action="{{ route('analyses.store.probe', $sample) }}" id="reviewForm" class="d-none">
                     @csrf
                     <div class="alert alert-info small">Values were read from the probe — review and edit if needed before saving.</div>
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Sample Name *</label>
-                            <input type="text" name="sample_name" class="form-control" required value="Probe Reading — {{ date('M j, Y') }}">
-                        </div>
-                        <div class="col-md-6">
                             <label class="form-label">Probe ID *</label>
                             <input type="text" name="probe_id" id="field_probe_id" class="form-control" required readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Sample Date *</label>
-                            <input type="date" name="sample_date" class="form-control" value="{{ date('Y-m-d') }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Date Tested *</label>
-                            <input type="date" name="date_tested" class="form-control" value="{{ date('Y-m-d') }}" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">pH *</label>
@@ -71,11 +60,11 @@
                             <label class="form-label">Nitrogen (ppm) *</label>
                             <input type="number" step="0.01" name="nitrogen_level" id="field_n" class="form-control" required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <label class="form-label">Phosphorus (ppm) *</label>
                             <input type="number" step="0.01" name="phosphorus_level" id="field_p" class="form-control" required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <label class="form-label">Potassium (ppm) *</label>
                             <input type="number" step="0.01" name="potassium_level" id="field_k" class="form-control" required>
                         </div>

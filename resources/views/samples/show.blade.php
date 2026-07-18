@@ -733,7 +733,7 @@ MOP = K ÷ 0.60 · DAP = P ÷ 0.46 · UREA = (N − DAP×0.18) ÷ 0.46
         <a href="{{ route('samples.export-excel', $sample) }}" class="btn btn-success ms-2">
             <i class="fas fa-file-excel me-1"></i> Export to Excel
         </a>
-        <a href="{{ $sample->farm ? route('analyses.choose', $sample->farm) : route('farms.index') }}" class="btn btn-primary ms-2">
+        <a href="{{ $sample->farm ? route('samples.create', $sample->farm) : route('farms.index') }}" class="btn btn-primary ms-2">
             <i class="fas fa-plus-circle me-1"></i> New Analysis
         </a>
     </div>

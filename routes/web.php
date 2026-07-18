@@ -101,12 +101,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/farms/all-polygons',  [FarmController::class, 'getAllFarmPolygons'])->name('api.farms.all-polygons');
     Route::post('/api/farms/validate-polygon', [FarmController::class, 'validatePolygonOverlap'])->name('api.farms.validate-polygon');
 
-    // Create Analysis (Manual / Colorimetric / Digital Probe), started from a Farm
-    Route::get('/farms/{farm}/analyses/create',        [AnalysisController::class, 'chooseType'])->name('analyses.choose');
-    Route::get('/farms/{farm}/analyses/create/manual',  [AnalysisController::class, 'createManual'])->name('analyses.create.manual');
-    Route::get('/farms/{farm}/analyses/create/probe',   [AnalysisController::class, 'createProbe'])->name('analyses.create.probe');
-    Route::post('/farms/{farm}/analyses',               [AnalysisController::class, 'store'])->name('analyses.store');
-    Route::post('/farms/{farm}/analyses/probe/confirm', [AnalysisController::class, 'storeProbe'])->name('analyses.store.probe');
+    // Step 1: Create Sample (started from a Farm)
+    Route::get('/farms/{farm}/samples/create', [AnalysisController::class, 'createSample'])->name('samples.create');
+    Route::post('/farms/{farm}/samples',       [AnalysisController::class, 'storeSample'])->name('samples.store');
+
+    // Step 2: Select Analysis Type + perform the analysis (Manual / Colorimetric / Digital Probe)
+    Route::get('/samples/{sample}/select-type',        [AnalysisController::class, 'chooseType'])->name('analyses.choose');
+    Route::get('/samples/{sample}/manual',              [AnalysisController::class, 'createManual'])->name('analyses.create.manual');
+    Route::post('/samples/{sample}/manual',             [AnalysisController::class, 'storeManual'])->name('analyses.store.manual');
+    Route::post('/samples/{sample}/colorimetric/start', [AnalysisController::class, 'startColorimetric'])->name('analyses.start.colorimetric');
+    Route::get('/samples/{sample}/probe',               [AnalysisController::class, 'createProbe'])->name('analyses.create.probe');
+    Route::post('/samples/{sample}/probe/confirm',      [AnalysisController::class, 'storeProbe'])->name('analyses.store.probe');
 
     // Export
     Route::get('/export',                          [ExportController::class, 'export'])->name('export');
