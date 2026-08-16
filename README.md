@@ -4,6 +4,8 @@ A web-based soil analysis system with crop and fertilizer recommendation, built 
 
 Developed as an undergraduate research project for the Bachelor of Science in Information Technology program, College of Bachelor of Science and Information Technology, Occidental Mindoro State College — Sablayan Campus (March 2025).
 
+**Live demo:** [agrilens.capstonedemo.com/map](https://agrilens.capstonedemo.com/map) — public interactive fertility map.
+
 ## Overview
 
 Agrilens 2.0 provides a unified platform for farm and farmer registration, farm boundary mapping, soil testing, and agricultural decision support across Sablayan's 24 barangays. Every analysis begins with a **Create Sample** step before an analysis type is chosen, and all three soil-test input modes feed the same fertility scoring, crop-matching, and fertilizer recommendation engine — so recommendations stay consistent no matter how the data was collected.
