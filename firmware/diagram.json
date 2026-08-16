@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "author": "Harold Rita (Roy)",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-mega", "id": "mega", "top": -9, "left": 34.8, "attrs": {} },
+    { "type": "wokwi-ili9341", "id": "lcd1", "top": -104.8, "left": -0.3, "attrs": {} }
+  ],
+  "connections": [
+    [ "lcd1:VCC", "mega:5V", "red", [ "v0" ] ],
+    [ "lcd1:GND", "mega:GND.2", "black", [ "v0" ] ],
+    [ "lcd1:CS", "mega:10", "green", [ "v76.8", "h9.6" ] ],
+    [ "lcd1:RST", "mega:9", "green", [ "v86.4", "h172.8" ] ],
+    [ "lcd1:D/C", "mega:8", "green", [ "v96", "h172.8", "v-9.6" ] ],
+    [ "lcd1:MOSI", "mega:51", "green", [ "v105.6", "h355.19", "v-57.6" ] ],
+    [ "lcd1:SCK", "mega:52", "green", [ "v115.2", "h57.59" ] ],
+    [ "lcd1:LED", "mega:5V", "green", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
