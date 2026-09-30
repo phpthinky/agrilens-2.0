@@ -5,6 +5,7 @@
 @endphp
 
 <div class="row g-3">
+    <!-- Left Column: Basic Details -->
     <div class="col-lg-5">
         <div class="mb-3">
             <label class="form-label">Farmer *</label>
@@ -87,7 +88,7 @@
                 <label class="form-label">Area (hectares)</label>
                 <input type="number" step="0.0001" name="area_hectares" id="area_hectares" class="form-control"
                        value="{{ old('area_hectares', $farm?->area_hectares) }}">
-                <div class="form-text">Leave blank to use the GPS-calculated area from the drawn polygon.</div>
+                <div class="form-text">Leave blank to use calculated GPS area.</div>
             </div>
             <div class="col-md-6 mb-3">
                 <label class="form-label">Established Year</label>
@@ -118,23 +119,77 @@
         </div>
     </div>
 
+    <!-- Right Column: GPS Point Picker & Map Preview -->
     <div class="col-lg-7">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="fas fa-map-marked-alt me-1"></i>Farm Boundary</span>
-                <span id="polygonStatus" class="text-muted small">No polygon drawn</span>
+                <span><i class="fas fa-map-marked-alt me-1"></i>Farm GPS Boundary Points</span>
+                <span id="pointCountBadge" class="badge bg-secondary">0 Points Added</span>
             </div>
             <div class="card-body">
-                <p class="text-muted small mb-2">Draw the farm boundary with the polygon tool (minimum 3 points). Existing farms are shown in red — boundaries must not overlap.</p>
-                <div id="farmMap" style="height: 420px; border-radius: 8px;"></div>
-                <div id="overlapWarning" class="alert alert-danger mt-2 d-none"></div>
-                <div class="row mt-2 small text-muted">
-                    <div class="col-md-6">GPS Area: <strong id="gpsArea">—</strong></div>
-                    <div class="col-md-6">Center: <strong id="gpsCenter">—</strong></div>
+                <p class="text-muted small mb-3">Add GPS coordinates sequentially (minimum 3 points required to generate map polygon).</p>
+                
+                <!-- GPS Point Inputs -->
+                <div class="row g-2 mb-3 bg-light p-2 rounded border">
+                    <div class="col-md-5">
+                        <label class="form-label small mb-1 fw-bold">Latitude</label>
+                        <input type="number" step="0.00000001" id="input_lat" class="form-control form-control-sm" placeholder="e.g. 12.823400">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small mb-1 fw-bold">Longitude</label>
+                        <input type="number" step="0.00000001" id="input_lng" class="form-control form-control-sm" placeholder="e.g. 120.875600">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary btn-sm w-100" id="btnAddGpsPoint">
+                            <i class="fas fa-plus me-1"></i> Add
+                        </button>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm w-100" id="btnUseCurrentGps">
+                            <i class="fas fa-crosshairs me-1"></i> Get Current Device Location
+                        </button>
+                    </div>
                 </div>
-                <button type="button" id="clearPolygonBtn" class="btn btn-sm btn-outline-danger mt-2">
-                    <i class="fas fa-trash me-1"></i>Clear Polygon
-                </button>
+
+                <!-- GPS Points Data Table -->
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered bg-white mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Latitude</th>
+                                <th>Longitude</th>
+                                <th class="text-center" style="width: 60px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gpsPointsTableBody">
+                            <tr id="emptyPointsRow">
+                                <td colspan="4" class="text-center text-muted small py-3">No GPS points added yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Action Controls for Map Preview -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button type="button" id="btnPreviewMap" class="btn btn-success" disabled>
+                        <i class="fas fa-map-marked-alt me-1"></i> Preview Map Boundary
+                    </button>
+                    <button type="button" id="btnClearGpsPoints" class="btn btn-sm btn-outline-danger">
+                        Clear All Points
+                    </button>
+                </div>
+
+                <!-- Map Section (HIDDEN UNTIL PREVIEW CLICKED) -->
+                <div id="mapContainerWrapper" style="display: none;">
+                    <hr>
+                    <div id="overlapWarning" class="alert alert-danger mt-2 d-none"></div>
+                    <div id="farmMap" style="height: 380px; border-radius: 8px;" class="mb-2"></div>
+                    <div class="row small text-muted">
+                        <div class="col-md-6">GPS Area: <strong id="gpsArea">—</strong></div>
+                        <div class="col-md-6">Center: <strong id="gpsCenter">—</strong></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -145,75 +200,183 @@
     </div>
 </div>
 
-<div class="mt-4">
-    <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i> Save Farm</button>
-    <a href="{{ route('farms.index') }}" class="btn btn-outline-secondary">Cancel</a>
-</div>
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const existingPolygon = @json($polygon ?: null);
+    let gpsPoints = @json($polygon ?: []);
     const excludeFarmId = {{ $farm?->id ?? 'null' }};
-    const startCenter = existingPolygon?.length
-        ? [existingPolygon.reduce((s, p) => s + p.lat, 0) / existingPolygon.length, existingPolygon.reduce((s, p) => s + p.lng, 0) / existingPolygon.length]
-        : [{{ old('display_latitude', $farm?->display_latitude ?? 12.85) }}, {{ old('display_longitude', $farm?->display_longitude ?? 120.9) }}];
+    const MIN_POINTS = 3;
 
-    const map = L.map('farmMap').setView(startCenter, existingPolygon?.length ? 16 : 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri', maxZoom: 19 }).addTo(new L.LayerGroup());
-
-    const drawnItems = new L.FeatureGroup().addTo(map);
-    let currentPolygon = null;
-
-    const drawControl = new L.Control.Draw({
-        draw: {
-            polygon: { allowIntersection: false, shapeOptions: { color: '#28a745' } },
-            polyline: false, rectangle: false, circle: false, marker: false, circlemarker: false,
-        },
-        edit: { featureGroup: drawnItems, remove: true },
-    });
-    map.addControl(drawControl);
-
+    let map = null;
+    let polygonLayer = null;
+    let markerLayers = [];
     let existingFarms = [];
+
+    // Pre-load existing boundaries for overlap checking
     fetch('{{ route('api.farms.all-polygons') }}' + (excludeFarmId ? '?exclude_farm_id=' + excludeFarmId : ''))
         .then(r => r.json())
         .then(data => {
             existingFarms = data.farms || [];
-            existingFarms.forEach(f => {
-                if (!f.polygon_coordinates || f.polygon_coordinates.length < 3) return;
-                L.polygon(f.polygon_coordinates.map(c => [c.lat, c.lng]), { color: '#dc3545', weight: 2, fillOpacity: 0.15, dashArray: '5,5' })
-                    .bindPopup(`<strong>${f.farm_name}</strong><br>Farmer: ${f.farmer_name}`)
-                    .addTo(map);
-            });
         });
 
-    function updateFromPolygon(layer) {
-        const coords = layer.getLatLngs()[0].map(ll => ({ lat: parseFloat(ll.lat.toFixed(8)), lng: parseFloat(ll.lng.toFixed(8)) }));
-        document.getElementById('polygon_coordinates').value = JSON.stringify(coords);
-        document.getElementById('polygonStatus').textContent = coords.length + ' points drawn';
+    function renderPointsTable() {
+        const tbody = document.getElementById('gpsPointsTableBody');
+        const badge = document.getElementById('pointCountBadge');
+        const btnPreview = document.getElementById('btnPreviewMap');
+        const hiddenPolygonInput = document.getElementById('polygon_coordinates');
 
-        const area = L.GeometryUtil ? L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]) / 10000 : null;
-        const centerLat = coords.reduce((s, p) => s + p.lat, 0) / coords.length;
-        const centerLng = coords.reduce((s, p) => s + p.lng, 0) / coords.length;
+        badge.textContent = `${gpsPoints.length} Point${gpsPoints.length === 1 ? '' : 's'} Added`;
+        
+        if (gpsPoints.length >= MIN_POINTS) {
+            btnPreview.disabled = false;
+            hiddenPolygonInput.value = JSON.stringify(gpsPoints);
+        } else {
+            btnPreview.disabled = true;
+            hiddenPolygonInput.value = '';
+        }
+
+        if (gpsPoints.length === 0) {
+            tbody.innerHTML = `<tr id="emptyPointsRow"><td colspan="4" class="text-center text-muted small py-3">No GPS points added yet.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = gpsPoints.map((pt, idx) => `
+            <tr>
+                <td><strong>Pt ${idx + 1}</strong></td>
+                <td>${parseFloat(pt.lat).toFixed(8)}</td>
+                <td>${parseFloat(pt.lng).toFixed(8)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" onclick="removeGpsPoint(${idx})">
+                        &times;
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    document.getElementById('btnAddGpsPoint').addEventListener('click', function() {
+        const latInput = document.getElementById('input_lat');
+        const lngInput = document.getElementById('input_lng');
+        const lat = parseFloat(latInput.value);
+        const lng = parseFloat(lngInput.value);
+
+        if (isNaN(lat) || isNaN(lng)) {
+            alert('Please enter valid Latitude and Longitude coordinates.');
+            return;
+        }
+
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            alert('Coordinates are out of bounds.');
+            return;
+        }
+
+        gpsPoints.push({ lat, lng });
+        latInput.value = '';
+        lngInput.value = '';
+        
+        renderPointsTable();
+    });
+
+    window.removeGpsPoint = function(index) {
+        gpsPoints.splice(index, 1);
+        renderPointsTable();
+        
+        // Hide map preview if points drop below minimum
+        if (gpsPoints.length < MIN_POINTS) {
+            document.getElementById('mapContainerWrapper').style.display = 'none';
+        } else if (map && document.getElementById('mapContainerWrapper').style.display !== 'none') {
+            drawMapPreview();
+        }
+    };
+
+    document.getElementById('btnClearGpsPoints').addEventListener('click', function() {
+        gpsPoints = [];
+        renderPointsTable();
+        document.getElementById('mapContainerWrapper').style.display = 'none';
+    });
+
+    document.getElementById('btnUseCurrentGps').addEventListener('click', function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    document.getElementById('input_lat').value = pos.coords.latitude.toFixed(8);
+                    document.getElementById('input_lng').value = pos.coords.longitude.toFixed(8);
+                },
+                () => alert('Unable to fetch device location.'),
+                { enableHighAccuracy: true }
+            );
+        }
+    });
+
+    document.getElementById('btnPreviewMap').addEventListener('click', function() {
+        if (gpsPoints.length < MIN_POINTS) {
+            alert(`At least ${MIN_POINTS} GPS points are required to render the farm boundary.`);
+            return;
+        }
+        document.getElementById('mapContainerWrapper').style.display = 'block';
+        drawMapPreview();
+    });
+
+    function drawMapPreview() {
+        const latLngs = gpsPoints.map(p => [p.lat, p.lng]);
+
+        if (!map) {
+            map = L.map('farmMap');
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+                attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 
+            }).addTo(map);
+        }
+
+        // Reset layers
+        markerLayers.forEach(m => map.removeLayer(m));
+        markerLayers = [];
+        if (polygonLayer) map.removeLayer(polygonLayer);
+
+        // Render markers
+        latLngs.forEach((coord, idx) => {
+            const m = L.marker(coord).addTo(map).bindPopup(`Point ${idx + 1}`);
+            markerLayers.push(m);
+        });
+
+        // Plot existing neighboring farms in red
+        existingFarms.forEach(f => {
+            if (!f.polygon_coordinates || f.polygon_coordinates.length < 3) return;
+            L.polygon(f.polygon_coordinates.map(c => [c.lat, c.lng]), { color: '#dc3545', weight: 2, fillOpacity: 0.15, dashArray: '5,5' })
+                .bindPopup(`<strong>${f.farm_name}</strong><br>Farmer: ${f.farmer_name}`)
+                .addTo(map);
+        });
+
+        // Render boundary polygon
+        polygonLayer = L.polygon(latLngs, { color: '#28a745', fillColor: '#28a745', fillOpacity: 0.35 }).addTo(map);
+        map.fitBounds(polygonLayer.getBounds(), { padding: [30, 30] });
+
+        // Geometric area calculations
+        const centerLat = gpsPoints.reduce((s, p) => s + parseFloat(p.lat), 0) / gpsPoints.length;
+        const centerLng = gpsPoints.reduce((s, p) => s + parseFloat(p.lng), 0) / gpsPoints.length;
+        
         document.getElementById('display_latitude').value = centerLat.toFixed(8);
         document.getElementById('display_longitude').value = centerLng.toFixed(8);
         document.getElementById('gpsCenter').textContent = centerLat.toFixed(6) + ', ' + centerLng.toFixed(6);
-        if (area !== null) document.getElementById('gpsArea').textContent = area.toFixed(4) + ' ha';
 
-        const overlap = existingFarms.find(f => f.polygon_coordinates && f.polygon_coordinates.length >= 3 && polygonsOverlap(coords, f.polygon_coordinates));
+        if (typeof L.GeometryUtil !== 'undefined') {
+            const area = L.GeometryUtil.geodesicArea(polygonLayer.getLatLngs()[0]) / 10000;
+            document.getElementById('gpsArea').textContent = area.toFixed(4) + ' ha';
+        }
+
+        // Overlap checks
+        const overlap = existingFarms.find(f => f.polygon_coordinates && f.polygon_coordinates.length >= 3 && polygonsOverlap(gpsPoints, f.polygon_coordinates));
         const warningEl = document.getElementById('overlapWarning');
         if (overlap) {
-            warningEl.textContent = `This boundary overlaps with existing farm "${overlap.farm_name}". Please redraw.`;
+            warningEl.textContent = `This boundary overlaps with existing farm "${overlap.farm_name}". Please adjust points.`;
             warningEl.classList.remove('d-none');
-            layer.setStyle({ color: '#dc3545' });
+            polygonLayer.setStyle({ color: '#dc3545', fillColor: '#dc3545' });
         } else {
             warningEl.classList.add('d-none');
-            layer.setStyle({ color: '#28a745' });
+            polygonLayer.setStyle({ color: '#28a745', fillColor: '#28a745' });
         }
+
+        setTimeout(() => map.invalidateSize(), 200);
     }
 
     function pointInPolygon(point, polygon) {
@@ -244,31 +407,11 @@ document.addEventListener('DOMContentLoaded', function () {
         return false;
     }
 
-    map.on(L.Draw.Event.CREATED, e => {
-        if (currentPolygon) drawnItems.removeLayer(currentPolygon);
-        currentPolygon = e.layer;
-        drawnItems.addLayer(currentPolygon);
-        updateFromPolygon(currentPolygon);
-    });
-    map.on(L.Draw.Event.EDITED, e => e.layers.eachLayer(updateFromPolygon));
-    map.on(L.Draw.Event.DELETED, () => {
-        currentPolygon = null;
-        document.getElementById('polygon_coordinates').value = '';
-        document.getElementById('polygonStatus').textContent = 'No polygon drawn';
-    });
-
-    document.getElementById('clearPolygonBtn').addEventListener('click', () => {
-        drawnItems.clearLayers();
-        currentPolygon = null;
-        document.getElementById('polygon_coordinates').value = '';
-        document.getElementById('polygonStatus').textContent = 'No polygon drawn';
-        document.getElementById('overlapWarning').classList.add('d-none');
-    });
-
-    if (existingPolygon?.length) {
-        currentPolygon = L.polygon(existingPolygon.map(p => [p.lat, p.lng]), { color: '#28a745' }).addTo(drawnItems);
-        map.fitBounds(currentPolygon.getBounds(), { padding: [30, 30] });
-        updateFromPolygon(currentPolygon);
+    // Initial render call
+    renderPointsTable();
+    if (gpsPoints.length >= MIN_POINTS) {
+        document.getElementById('mapContainerWrapper').style.display = 'block';
+        drawMapPreview();
     }
 });
 </script>

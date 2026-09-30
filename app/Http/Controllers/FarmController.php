@@ -19,9 +19,7 @@ class FarmController extends Controller
             'farm_address' => 'nullable|string',
             'area_hectares' => 'nullable|numeric|min:0.0001',
             'farm_type' => 'required|string|in:Riceland,Cornland,Vegetable Farm,Fruit Orchard,Coconut Farm,Mixed Crops,Pasture Land,Fish Pond,Other',
-            'polygon_coordinates' => 'nullable|array|min:3',
-            'polygon_coordinates.*.lat' => 'required_with:polygon_coordinates|numeric|between:-90,90',
-            'polygon_coordinates.*.lng' => 'required_with:polygon_coordinates|numeric|between:-180,180',
+            'polygon_coordinates' => 'nullable',
             'display_latitude' => 'nullable|numeric|between:-90,90',
             'display_longitude' => 'nullable|numeric|between:-180,180',
             'description' => 'nullable|string',
@@ -80,23 +78,31 @@ class FarmController extends Controller
         $validated = $request->validate($this->rules());
         $validated['is_active'] = $request->boolean('is_active', true);
 
-        if (!empty($validated['polygon_coordinates'])) {
+        // Normalize polygon_coordinates from JSON string to Array
+        if (is_string($request->polygon_coordinates) && !empty($request->polygon_coordinates)) {
+            $validated['polygon_coordinates'] = json_decode($request->polygon_coordinates, true);
+        }
+
+        if (!empty($validated['polygon_coordinates']) && count($validated['polygon_coordinates']) >= 3) {
             if ($overlap = $this->findOverlappingFarm($validated['polygon_coordinates'])) {
                 return back()->withErrors([
-                    'polygon_coordinates' => "The farm boundary overlaps with existing farm '{$overlap->farm_name}'. Please redraw the boundaries.",
+                    'polygon_coordinates' => "The farm boundary overlaps with existing farm '{$overlap->farm_name}'. Please adjust coordinates.",
                 ])->withInput();
             }
 
             $center = (new Farm(['polygon_coordinates' => $validated['polygon_coordinates']]))->calculateCenterPoint();
-            $validated['display_latitude'] ??= $center['lat'];
-            $validated['display_longitude'] ??= $center['lng'];
+            $validated['display_latitude'] ??= $center['lat'] ?? null;
+            $validated['display_longitude'] ??= $center['lng'] ?? null;
             $validated['location_source'] = 'polygon';
         } elseif (!empty($validated['display_latitude']) && !empty($validated['display_longitude'])) {
             $validated['location_source'] = 'manual';
         }
 
-        if (empty($validated['area_hectares'])) {
-            $temp = new Farm(['polygon_coordinates' => $validated['polygon_coordinates'] ?? null, 'display_latitude' => $validated['display_latitude'] ?? null]);
+        if (empty($validated['area_hectares']) && !empty($validated['polygon_coordinates'])) {
+            $temp = new Farm([
+                'polygon_coordinates' => $validated['polygon_coordinates'],
+                'display_latitude' => $validated['display_latitude'] ?? null
+            ]);
             $validated['area_hectares'] = $temp->calculateAreaFromPolygon();
         }
 
@@ -128,12 +134,30 @@ class FarmController extends Controller
         $validated = $request->validate($this->rules());
         $validated['is_active'] = $request->boolean('is_active', true);
 
-        if (!empty($validated['polygon_coordinates'])) {
+        // Normalize polygon_coordinates from JSON string to Array
+        if (is_string($request->polygon_coordinates) && !empty($request->polygon_coordinates)) {
+            $validated['polygon_coordinates'] = json_decode($request->polygon_coordinates, true);
+        }
+
+        if (!empty($validated['polygon_coordinates']) && count($validated['polygon_coordinates']) >= 3) {
             if ($overlap = $this->findOverlappingFarm($validated['polygon_coordinates'], excludeFarmId: $farm->id)) {
                 return back()->withErrors([
-                    'polygon_coordinates' => "The farm boundary overlaps with existing farm '{$overlap->farm_name}'. Please redraw the boundaries.",
+                    'polygon_coordinates' => "The farm boundary overlaps with existing farm '{$overlap->farm_name}'. Please adjust coordinates.",
                 ])->withInput();
             }
+
+            $center = (new Farm(['polygon_coordinates' => $validated['polygon_coordinates']]))->calculateCenterPoint();
+            $validated['display_latitude'] = $center['lat'] ?? $validated['display_latitude'];
+            $validated['display_longitude'] = $center['lng'] ?? $validated['display_longitude'];
+            $validated['location_source'] = 'polygon';
+        }
+
+        if (empty($validated['area_hectares']) && !empty($validated['polygon_coordinates'])) {
+            $temp = new Farm([
+                'polygon_coordinates' => $validated['polygon_coordinates'],
+                'display_latitude' => $validated['display_latitude'] ?? null
+            ]);
+            $validated['area_hectares'] = $temp->calculateAreaFromPolygon();
         }
 
         $farm->update($validated);
@@ -259,14 +283,20 @@ class FarmController extends Controller
 
     public function validatePolygonOverlap(Request $request)
     {
-        $request->validate([
-            'polygon_coordinates' => 'required|array|min:3',
-            'polygon_coordinates.*.lat' => 'required|numeric',
-            'polygon_coordinates.*.lng' => 'required|numeric',
-            'exclude_farm_id' => 'nullable|exists:farms,id',
-        ]);
+        $coords = $request->polygon_coordinates;
+        if (is_string($coords)) {
+            $coords = json_decode($coords, true);
+        }
 
-        $overlap = $this->findOverlappingFarm($request->polygon_coordinates, $request->exclude_farm_id);
+        if (empty($coords) || !is_array($coords) || count($coords) < 3) {
+            return response()->json([
+                'valid' => false,
+                'has_overlap' => false,
+                'message' => 'Minimum 3 points required.',
+            ], 422);
+        }
+
+        $overlap = $this->findOverlappingFarm($coords, $request->exclude_farm_id);
 
         if ($overlap) {
             return response()->json([
