@@ -168,7 +168,7 @@
                 <div class="col-md-3">
                     <h6>About</h6>
                     <p class="small mb-0">
-                        Multi-modal soil analysis — manual, colorimetric, and Digital Probe QR scan —
+                        Multi-modal soil analysis — manual, colorimetric, and Digital Probe RS485 sensor —
                         with GPS farm mapping and fertilizer recommendations.
                     </p>
                 </div>

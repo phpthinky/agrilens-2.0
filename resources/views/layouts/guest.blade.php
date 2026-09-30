@@ -167,13 +167,13 @@
             <div>
                 <div class="auth-hero-title">Soil intelligence for a stronger harvest</div>
                 <p class="auth-hero-lead">
-                    Manual, colorimetric, and Digital Probe QR soil analysis — with GPS farm mapping and
+                    Manual, colorimetric, and Digital Probe (RS485 NPK sensor) soil analysis — with GPS farm mapping and
                     fertilizer recommendations — in one platform built for Sablayan's field technicians.
                 </p>
                 <div class="auth-feature-list">
                     <div class="auth-feature">
                         <i class="fa fa-flask"></i>
-                        <div>Three soil test modes: manual entry, webcam colorimetric capture, and Digital Probe QR scan</div>
+                        <div>Three soil test modes: manual entry, webcam colorimetric capture, and Digital Probe USB/RS485 sensor</div>
                     </div>
                     <div class="auth-feature">
                         <i class="fa fa-map-marked-alt"></i>

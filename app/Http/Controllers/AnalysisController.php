@@ -182,15 +182,19 @@ class AnalysisController extends Controller
     {
         $this->authoriseSample($sample);
 
-        // Digital Probe hardware measures N/P/K only — no pH sensor.
+        // 8-in-1 RS485 sensor also measures pH, moisture/temperature/EC (read via
+        // Web Serial in the browser) — pH is optional since older probe payloads
+        // or a partial read may not include it.
         $request->validate([
             'probe_id' => 'required|string|max:100',
+            'ph_level' => 'nullable|numeric|between:0,14',
             'nitrogen_level' => 'required|numeric|min:0',
             'phosphorus_level' => 'required|numeric|min:0',
             'potassium_level' => 'required|numeric|min:0',
             'probe_raw_payload' => 'nullable|string',
         ]);
 
+        $ph = $request->filled('ph_level') ? (float) $request->ph_level : null;
         $n = (float) $request->nitrogen_level;
         $p = (float) $request->phosphorus_level;
         $k = (float) $request->potassium_level;
@@ -201,12 +205,12 @@ class AnalysisController extends Controller
             'analysis_type' => 'probe',
             'probe_id' => $request->probe_id,
             'probe_raw_payload' => $rawPayload,
-            'ph_level' => null,
+            'ph_level' => $ph,
             'nitrogen_level' => $n,
             'phosphorus_level' => $p,
             'potassium_level' => $k,
-            'fertility_score' => $this->fertilizer->computeFertilityScore(null, $n, $p, $k),
-            'recommended_crop' => Crop::topMatchName(null, $n, $p, $k),
+            'fertility_score' => $this->fertilizer->computeFertilityScore($ph, $n, $p, $k),
+            'recommended_crop' => Crop::topMatchName($ph, $n, $p, $k),
             'analyzed_at' => now(),
         ]);
 
