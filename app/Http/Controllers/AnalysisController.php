@@ -187,6 +187,7 @@ class AnalysisController extends Controller
         // or a partial read may not include it.
         $request->validate([
             'probe_id' => 'required|string|max:100',
+            'probe_model' => 'nullable|string|max:100',
             'ph_level' => 'nullable|numeric|between:0,14',
             'nitrogen_level' => 'required|numeric|min:0',
             'phosphorus_level' => 'required|numeric|min:0',
@@ -204,6 +205,7 @@ class AnalysisController extends Controller
         $sample->update([
             'analysis_type' => 'probe',
             'probe_id' => $request->probe_id,
+            'probe_model' => $request->probe_model,
             'probe_raw_payload' => $rawPayload,
             'ph_level' => $ph,
             'nitrogen_level' => $n,

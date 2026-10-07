@@ -128,9 +128,32 @@
             </div>
             <div class="card-body">
                 <p class="text-muted small mb-3">Add GPS coordinates sequentially (minimum 3 points required to generate map polygon).</p>
-                
-                <!-- GPS Point Inputs -->
-                <div class="row g-2 mb-3 bg-light p-2 rounded border">
+
+                <!-- Capture Mode Tabs -->
+                <ul class="nav nav-tabs nav-fill mb-3" id="captureModeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="tab-live-btn" data-mode="live" type="button" role="tab">
+                            <i class="fas fa-walking me-1"></i> Live GPS Capture
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-manual-btn" data-mode="manual" type="button" role="tab">
+                            <i class="fas fa-keyboard me-1"></i> Manual GPS Entry
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Live GPS Capture pane -->
+                <div id="pane-live" class="mb-3 bg-light p-2 rounded border">
+                    <p class="text-muted small mb-2">Walk to each corner of the farm and tap below to drop a point at your current location.</p>
+                    <button type="button" class="btn btn-primary w-100" id="btnCaptureLivePoint">
+                        <i class="fas fa-crosshairs me-1"></i> Capture My Location &amp; Add Point
+                    </button>
+                </div>
+
+                <!-- Manual GPS Entry pane -->
+                <div id="pane-manual" class="row g-2 mb-3 bg-light p-2 rounded border d-none">
+                    <p class="text-muted small mb-2">Type in coordinates read off an external GPS device or reference source.</p>
                     <div class="col-md-5">
                         <label class="form-label small mb-1 fw-bold">Latitude</label>
                         <input type="number" step="0.00000001" id="input_lat" class="form-control form-control-sm" placeholder="e.g. 12.823400">
@@ -144,11 +167,6 @@
                             <i class="fas fa-plus me-1"></i> Add
                         </button>
                     </div>
-                    <div class="col-12 mt-2">
-                        <button type="button" class="btn btn-outline-primary btn-sm w-100" id="btnUseCurrentGps">
-                            <i class="fas fa-crosshairs me-1"></i> Get Current Device Location
-                        </button>
-                    </div>
                 </div>
 
                 <!-- GPS Points Data Table -->
@@ -159,12 +177,13 @@
                                 <th>#</th>
                                 <th>Latitude</th>
                                 <th>Longitude</th>
+                                <th>Captured Via</th>
                                 <th class="text-center" style="width: 60px;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="gpsPointsTableBody">
                             <tr id="emptyPointsRow">
-                                <td colspan="4" class="text-center text-muted small py-3">No GPS points added yet.</td>
+                                <td colspan="5" class="text-center text-muted small py-3">No GPS points added yet.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -194,6 +213,7 @@
         </div>
 
         <input type="hidden" name="polygon_coordinates" id="polygon_coordinates" value="{{ old('polygon_coordinates') }}">
+        <input type="hidden" name="location_source" id="location_source" value="{{ old('location_source', $farm?->location_source ?? 'live') }}">
         <input type="hidden" name="display_latitude" id="display_latitude" value="{{ old('display_latitude', $farm?->display_latitude) }}">
         <input type="hidden" name="display_longitude" id="display_longitude" value="{{ old('display_longitude', $farm?->display_longitude) }}">
         @error('polygon_coordinates')<div class="alert alert-danger mt-2">{{ $message }}</div>@enderror
@@ -204,9 +224,11 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    let gpsPoints = @json($polygon ?: []);
+    const initialSource = {{ Js::from(old('location_source', $farm?->location_source ?? 'live')) }};
+    let gpsPoints = @json($polygon ?: []).map(p => ({ lat: p.lat, lng: p.lng, source: p.source || initialSource }));
     const excludeFarmId = {{ $farm?->id ?? 'null' }};
     const MIN_POINTS = 3;
+    let activeMode = 'live';
 
     let map = null;
     let polygonLayer = null;
@@ -220,6 +242,29 @@ document.addEventListener('DOMContentLoaded', function () {
             existingFarms = data.farms || [];
         });
 
+    // Capture mode tabs: Live GPS Capture vs Manual GPS Entry
+    document.getElementById('tab-live-btn').addEventListener('click', function() {
+        activeMode = 'live';
+        this.classList.add('active');
+        document.getElementById('tab-manual-btn').classList.remove('active');
+        document.getElementById('pane-live').classList.remove('d-none');
+        document.getElementById('pane-manual').classList.add('d-none');
+    });
+    document.getElementById('tab-manual-btn').addEventListener('click', function() {
+        activeMode = 'manual';
+        this.classList.add('active');
+        document.getElementById('tab-live-btn').classList.remove('active');
+        document.getElementById('pane-manual').classList.remove('d-none');
+        document.getElementById('pane-live').classList.add('d-none');
+    });
+
+    // The farm's overall location_source is 'live' unless every point was typed in manually
+    function updateLocationSource() {
+        const hidden = document.getElementById('location_source');
+        if (gpsPoints.length === 0) return;
+        hidden.value = gpsPoints.every(p => p.source === 'manual') ? 'manual' : 'live';
+    }
+
     function renderPointsTable() {
         const tbody = document.getElementById('gpsPointsTableBody');
         const badge = document.getElementById('pointCountBadge');
@@ -227,7 +272,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const hiddenPolygonInput = document.getElementById('polygon_coordinates');
 
         badge.textContent = `${gpsPoints.length} Point${gpsPoints.length === 1 ? '' : 's'} Added`;
-        
+
+        updateLocationSource();
+
         if (gpsPoints.length >= MIN_POINTS) {
             btnPreview.disabled = false;
             hiddenPolygonInput.value = JSON.stringify(gpsPoints);
@@ -237,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (gpsPoints.length === 0) {
-            tbody.innerHTML = `<tr id="emptyPointsRow"><td colspan="4" class="text-center text-muted small py-3">No GPS points added yet.</td></tr>`;
+            tbody.innerHTML = `<tr id="emptyPointsRow"><td colspan="5" class="text-center text-muted small py-3">No GPS points added yet.</td></tr>`;
             return;
         }
 
@@ -246,6 +293,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td><strong>Pt ${idx + 1}</strong></td>
                 <td>${parseFloat(pt.lat).toFixed(8)}</td>
                 <td>${parseFloat(pt.lng).toFixed(8)}</td>
+                <td>
+                    <span class="badge ${pt.source === 'manual' ? 'bg-secondary' : 'bg-primary'}">
+                        <i class="fas fa-${pt.source === 'manual' ? 'keyboard' : 'walking'} me-1"></i>${pt.source === 'manual' ? 'Manual' : 'Live'}
+                    </span>
+                </td>
                 <td class="text-center">
                     <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" onclick="removeGpsPoint(${idx})">
                         &times;
@@ -255,27 +307,50 @@ document.addEventListener('DOMContentLoaded', function () {
         `).join('');
     }
 
+    function addPoint(lat, lng, source) {
+        if (isNaN(lat) || isNaN(lng)) {
+            alert('Please enter valid Latitude and Longitude coordinates.');
+            return false;
+        }
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            alert('Coordinates are out of bounds.');
+            return false;
+        }
+        gpsPoints.push({ lat, lng, source });
+        renderPointsTable();
+        return true;
+    }
+
     document.getElementById('btnAddGpsPoint').addEventListener('click', function() {
         const latInput = document.getElementById('input_lat');
         const lngInput = document.getElementById('input_lng');
-        const lat = parseFloat(latInput.value);
-        const lng = parseFloat(lngInput.value);
+        if (addPoint(parseFloat(latInput.value), parseFloat(lngInput.value), 'manual')) {
+            latInput.value = '';
+            lngInput.value = '';
+        }
+    });
 
-        if (isNaN(lat) || isNaN(lng)) {
-            alert('Please enter valid Latitude and Longitude coordinates.');
+    document.getElementById('btnCaptureLivePoint').addEventListener('click', function() {
+        if (!navigator.geolocation) {
+            alert('This device/browser does not support GPS location capture.');
             return;
         }
-
-        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-            alert('Coordinates are out of bounds.');
-            return;
-        }
-
-        gpsPoints.push({ lat, lng });
-        latInput.value = '';
-        lngInput.value = '';
-        
-        renderPointsTable();
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Getting location…';
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                addPoint(pos.coords.latitude, pos.coords.longitude, 'live');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-crosshairs me-1"></i> Capture My Location &amp; Add Point';
+            },
+            () => {
+                alert('Unable to fetch device location. Make sure location access is allowed.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-crosshairs me-1"></i> Capture My Location &amp; Add Point';
+            },
+            { enableHighAccuracy: true }
+        );
     });
 
     window.removeGpsPoint = function(index) {
@@ -294,19 +369,6 @@ document.addEventListener('DOMContentLoaded', function () {
         gpsPoints = [];
         renderPointsTable();
         document.getElementById('mapContainerWrapper').style.display = 'none';
-    });
-
-    document.getElementById('btnUseCurrentGps').addEventListener('click', function() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                pos => {
-                    document.getElementById('input_lat').value = pos.coords.latitude.toFixed(8);
-                    document.getElementById('input_lng').value = pos.coords.longitude.toFixed(8);
-                },
-                () => alert('Unable to fetch device location.'),
-                { enableHighAccuracy: true }
-            );
-        }
     });
 
     document.getElementById('btnPreviewMap').addEventListener('click', function() {

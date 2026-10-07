@@ -20,6 +20,7 @@ class FarmController extends Controller
             'area_hectares' => 'nullable|numeric|min:0.0001',
             'farm_type' => 'required|string|in:Riceland,Cornland,Vegetable Farm,Fruit Orchard,Coconut Farm,Mixed Crops,Pasture Land,Fish Pond,Other',
             'polygon_coordinates' => 'nullable',
+            'location_source' => 'nullable|in:live,manual,corrected',
             'display_latitude' => 'nullable|numeric|between:-90,90',
             'display_longitude' => 'nullable|numeric|between:-180,180',
             'description' => 'nullable|string',
@@ -93,7 +94,7 @@ class FarmController extends Controller
             $center = (new Farm(['polygon_coordinates' => $validated['polygon_coordinates']]))->calculateCenterPoint();
             $validated['display_latitude'] ??= $center['lat'] ?? null;
             $validated['display_longitude'] ??= $center['lng'] ?? null;
-            $validated['location_source'] = 'polygon';
+            $validated['location_source'] = $validated['location_source'] ?? 'live';
         } elseif (!empty($validated['display_latitude']) && !empty($validated['display_longitude'])) {
             $validated['location_source'] = 'manual';
         }
@@ -149,7 +150,7 @@ class FarmController extends Controller
             $center = (new Farm(['polygon_coordinates' => $validated['polygon_coordinates']]))->calculateCenterPoint();
             $validated['display_latitude'] = $center['lat'] ?? $validated['display_latitude'];
             $validated['display_longitude'] = $center['lng'] ?? $validated['display_longitude'];
-            $validated['location_source'] = 'polygon';
+            $validated['location_source'] = $validated['location_source'] ?? 'live';
         }
 
         if (empty($validated['area_hectares']) && !empty($validated['polygon_coordinates'])) {

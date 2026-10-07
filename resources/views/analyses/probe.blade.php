@@ -97,6 +97,13 @@
                             <input type="text" name="probe_id" id="field_probe_id" class="form-control" required>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label">Probe Model</label>
+                            <input type="text" name="probe_model" id="field_probe_model" class="form-control" placeholder="e.g. Yago 8-in-1" list="probeModelOptions">
+                            <datalist id="probeModelOptions">
+                                <option value="Yago 8-in-1">
+                            </datalist>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label">Soil pH</label>
                             <input type="number" step="0.01" min="0" max="14" name="ph_level" id="field_ph" class="form-control">
                         </div>
@@ -152,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         document.getElementById('field_probe_id').value = payload.probe_id || ('RS485-' + Date.now());
+        document.getElementById('field_probe_model').value = payload.probe_model || document.getElementById('field_probe_model').value || '';
         document.getElementById('field_ph').value = (payload.ph !== undefined && payload.ph !== null) ? payload.ph : '';
         document.getElementById('field_n').value = payload.n;
         document.getElementById('field_p').value = payload.p;

@@ -101,7 +101,7 @@
 @if($sample->analysis_type === 'manual')
 <div class="note-box">Soil parameters entered manually by {{ $sample->user->username }}.</div>
 @elseif($sample->analysis_type === 'probe')
-<div class="note-box">Soil parameters read from Digital Probe <strong>{{ $sample->probe_id }}</strong> and confirmed by {{ $sample->user->username }}.</div>
+<div class="note-box">Soil parameters read from Digital Probe <strong>{{ $sample->probe_id }}</strong>{{ $sample->probe_model ? ' ('.$sample->probe_model.')' : '' }} and confirmed by {{ $sample->user->username }}.</div>
 @endif
 
 {{-- ── Farmer & Farm Information ───────────────────────────────────── --}}

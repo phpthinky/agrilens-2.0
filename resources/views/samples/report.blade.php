@@ -34,6 +34,9 @@
                 <p class="mb-1"><strong>Analysis Method:</strong> {{ ucfirst($sample->analysis_type ?? 'colorimetric') }}</p>
                 @if($sample->analysis_type === 'probe')
                 <p class="mb-1"><strong>Probe ID:</strong> {{ $sample->probe_id }}</p>
+                @if($sample->probe_model)
+                <p class="mb-1"><strong>Probe Model:</strong> {{ $sample->probe_model }}</p>
+                @endif
                 @endif
             </div>
             <div class="col-md-4">

@@ -17,7 +17,7 @@ class SoilSample extends Model
         'ph_level', 'nitrogen_level', 'phosphorus_level', 'potassium_level',
         'fertility_score', 'ai_recommendation', 'gemini_crop_recommendation', 'recommended_crop',
         'tests_completed', 'analyzed_at',
-        'analysis_type', 'soil_type', 'probe_id', 'probe_raw_payload', 'notes',
+        'analysis_type', 'soil_type', 'probe_id', 'probe_model', 'probe_raw_payload', 'notes',
     ];
 
     protected function casts(): array

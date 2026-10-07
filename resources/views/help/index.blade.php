@@ -34,6 +34,14 @@
             <ul class="list-unstyled help-toc mb-0">
                 <li><a href="#overview"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Overview</a></li>
                 <li><a href="#getting-started"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Getting Started</a></li>
+                <li><a href="#farm-management"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Farmers &amp; Farms</a></li>
+                <li><a href="#boundary-mapping"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Farm Boundary Mapping</a></li>
+                <li class="ms-3"><a href="#boundary-live"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Live GPS Capture</a></li>
+                <li class="ms-3"><a href="#boundary-manual"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Manual GPS Entry</a></li>
+                <li><a href="#analysis-methods"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Analysis Methods</a></li>
+                <li class="ms-3"><a href="#method-manual"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Manual Input</a></li>
+                <li class="ms-3"><a href="#method-colorimetric"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Colorimetric Webcam</a></li>
+                <li class="ms-3"><a href="#method-probe"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Digital Probe (USB)</a></li>
                 <li><a href="#ph-test"><i class="fas fa-circle fa-xs me-1 text-muted"></i> pH Test (2-Step)</a></li>
                 <li class="ms-3"><a href="#ph-step1"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Step 1 — CPR</a></li>
                 <li class="ms-3"><a href="#ph-step2"><i class="fas fa-circle fa-xs me-1 text-muted"></i> Step 2 — BCG / BTB</a></li>
@@ -73,10 +81,14 @@
             </div>
             <div class="card-body">
                 <p>
-                    The <strong>Soil Fertility Analyzer</strong> guides field technicians through the Bureau of Soils
-                    and Water Management (BSWM) colorimetric procedure to measure soil <strong>pH</strong>,
+                    <strong>Agrilens 2.0</strong> guides field technicians through registering farmers and farms,
+                    mapping each farm's boundary by GPS, and measuring soil <strong>pH</strong>,
                     <strong>Nitrogen (N)</strong>, <strong>Phosphorus (P)</strong>, and <strong>Potassium (K)</strong>
-                    using a portable test kit and camera-based color capture.
+                    using whichever of three analysis methods fits the field situation — <strong>Manual Input</strong>,
+                    <strong>Colorimetric Webcam</strong> (the BSWM test-kit procedure below), or a
+                    <strong>Digital Probe</strong> connected over USB. Every method feeds the same fertility
+                    scoring and fertilizer recommendation engine, so results are consistent regardless of how the
+                    reading was taken.
                 </p>
                 <div class="row g-3 mt-1">
                     <div class="col-sm-6 col-md-3">
@@ -88,16 +100,16 @@
                     </div>
                     <div class="col-sm-6 col-md-3">
                         <div class="border rounded p-2 text-center">
-                            <i class="fas fa-camera fa-2x text-primary mb-1"></i>
-                            <div class="small fw-bold">3 Captures / Test</div>
-                            <div class="text-muted" style="font-size:.75rem;">Averaged for accuracy</div>
+                            <i class="fas fa-list-check fa-2x text-primary mb-1"></i>
+                            <div class="small fw-bold">3 Input Methods</div>
+                            <div class="text-muted" style="font-size:.75rem;">Manual · Webcam · Digital Probe</div>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3">
                         <div class="border rounded p-2 text-center">
-                            <i class="fas fa-clock fa-2x text-warning mb-1"></i>
-                            <div class="small fw-bold">8 min Timer</div>
-                            <div class="text-muted" style="font-size:.75rem;">Per reaction step</div>
+                            <i class="fas fa-map-marked-alt fa-2x text-warning mb-1"></i>
+                            <div class="small fw-bold">GPS Farm Boundary</div>
+                            <div class="text-muted" style="font-size:.75rem;">Live capture or manual entry</div>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3">
@@ -119,16 +131,135 @@
             <div class="card-body">
                 <ol class="mb-0">
                     <li class="mb-2">Log in with your assigned username and password.</li>
-                    <li class="mb-2">Go to <strong>Soil Samples → New Sample</strong> and fill in the farmer details, field location, and date tested.</li>
-                    <li class="mb-2">Open the sample you just created and start the testing workflow in order:
-                        <span class="badge bg-secondary me-1">pH</span>
-                        <span class="badge bg-success me-1">Nitrogen</span>
-                        <span class="badge bg-primary me-1">Phosphorus</span>
-                        <span class="badge bg-info">Potassium</span>
-                    </li>
-                    <li class="mb-2">After all four parameters are done, review the <strong>Fertilizer Recommendation</strong> and use the calculator for crop-specific rates.</li>
+                    <li class="mb-2">Under <strong>Registry Information</strong>, make sure the farmer exists (<strong>Farmers</strong>) and their farm is registered with a mapped boundary (<strong>Farms</strong>) — see <a href="#boundary-mapping">Farm Boundary Mapping</a> below.</li>
+                    <li class="mb-2">Click <strong>New Analysis</strong> in the sidebar, open the target farm, and click <strong>Create Sample</strong> to record the sample name, dates, and analyst.</li>
+                    <li class="mb-2">On the <strong>Select Analysis Type</strong> screen, pick the method that fits the field situation: <span class="badge bg-success me-1">Manual</span><span class="badge bg-success me-1">Colorimetric</span><span class="badge bg-success">Digital Probe</span> — see <a href="#analysis-methods">Analysis Methods</a>.</li>
+                    <li class="mb-2">After the chosen method is complete, review the <strong>Fertility Score</strong> and <strong>Fertilizer Recommendation</strong>, and use the calculator for crop-specific rates.</li>
                     <li>Export or print the sample report as needed.</li>
                 </ol>
+            </div>
+        </div>
+
+        {{-- ── FARMERS & FARMS ───────────────────────────────────── --}}
+        <div id="farm-management" class="section-anchor card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-tractor me-2"></i>Farmers &amp; Farms
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Every soil sample belongs to a Farm, and every Farm belongs to a Farmer. Register both before starting an analysis.</p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="fw-bold"><i class="fas fa-user-tie text-success me-1"></i>Farmers</h6>
+                            <p class="small mb-0">Go to <strong>Farmers → Add Farmer</strong> to record name, contact details, barangay, and farmer type (Owner / Tenant / Caretaker / Other). A farmer can own multiple farms.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border rounded p-3 h-100">
+                            <h6 class="fw-bold"><i class="fas fa-tractor text-success me-1"></i>Farms</h6>
+                            <p class="small mb-0">Go to <strong>Farms → Add Farm</strong>, select the farmer and barangay, fill in farm type / tenure / irrigation details, then capture the <strong>GPS boundary</strong> (minimum 3 points) before saving.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ── FARM BOUNDARY MAPPING ─────────────────────────────── --}}
+        <div id="boundary-mapping" class="section-anchor card mb-4">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-map-marked-alt me-2"></i>Farm Boundary Mapping
+            </div>
+            <div class="card-body">
+                <p>
+                    On the Farm create/edit page, the boundary is built from a sequence of <strong>GPS points</strong> —
+                    a minimum of <strong>3 points</strong> is required before the system can calculate the farm's
+                    area, center point, and polygon shape. Points can come from either tab, and you can mix both on
+                    the same farm:
+                </p>
+
+                <h6 id="boundary-live" class="section-anchor fw-bold text-dark mt-4 mb-2">
+                    <span class="badge bg-primary me-1"><i class="fas fa-walking"></i></span> Live GPS Capture
+                </h6>
+                <p class="small">
+                    Walk to each corner of the farm with the device you're logged in on (phone or laptop) and tap
+                    <strong>Capture My Location &amp; Add Point</strong>. The browser's own GPS reading is dropped as
+                    a point immediately — repeat at each corner, in order, until the shape is closed (3+ points).
+                    This is the recommended method since it reflects where you're actually standing in the field.
+                </p>
+
+                <h6 id="boundary-manual" class="section-anchor fw-bold text-dark mt-4 mb-2">
+                    <span class="badge bg-secondary me-1"><i class="fas fa-keyboard"></i></span> Manual GPS Entry
+                </h6>
+                <p class="small">
+                    Switch to the <strong>Manual GPS Entry</strong> tab to type in Latitude/Longitude pairs read off
+                    an external device or reference source, then click <strong>Add</strong> for each point. Use this
+                    when you already have recorded coordinates and don't need to walk the boundary again.
+                </p>
+
+                <div class="alert alert-info small mb-0">
+                    <i class="fas fa-circle-info me-1"></i>
+                    Each point you add is tagged Live or Manual in the points table. Click <strong>Preview Map
+                    Boundary</strong> once you have 3+ points to see the polygon, its area, and whether it overlaps
+                    an existing farm — overlapping boundaries must be adjusted before saving.
+                </div>
+            </div>
+        </div>
+
+        {{-- ── ANALYSIS METHODS ──────────────────────────────────── --}}
+        <div id="analysis-methods" class="section-anchor card mb-4">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-vial-circle-check me-2"></i>Analysis Methods
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">After <strong>Create Sample</strong>, choose the method that fits the field situation. All three produce the same fertility score and crop/fertilizer recommendations.</p>
+
+                <h6 id="method-manual" class="section-anchor fw-bold text-dark mt-3 mb-2">
+                    <span class="badge bg-success me-1"><i class="fas fa-keyboard"></i></span> Manual Input
+                </h6>
+                <p class="small">
+                    For each of pH, N, P, and K: type the value directly (e.g. from an external lab report), or
+                    select the observed reagent color from the same BSWM chart used by the Colorimetric method —
+                    both paths run through the same color-matching engine, so results stay consistent either way.
+                </p>
+
+                <h6 id="method-colorimetric" class="section-anchor fw-bold text-dark mt-4 mb-2">
+                    <span class="badge bg-success me-1"><i class="fas fa-camera"></i></span> Colorimetric Webcam
+                </h6>
+                <p class="small">
+                    Runs the full BSWM reagent + webcam capture procedure described in <a href="#ph-test">pH Test</a>
+                    and <a href="#npk-tests">N / P / K Tests</a> below.
+                </p>
+
+                <h6 id="method-probe" class="section-anchor fw-bold text-dark mt-4 mb-2">
+                    <span class="badge bg-success me-1"><i class="fas fa-microchip"></i></span> Digital Probe (USB)
+                </h6>
+                <p class="small mb-2">
+                    For a handheld 7/8-in-1 RS485 soil probe (e.g. a Yago 8-in-1) connected over a USB-to-RS485
+                    cable. This reads pH, N, P, and K live from the probe — no manual transcription needed.
+                </p>
+                @php
+                $probeSteps = [
+                    'Plug the probe\'s USB cable into the laptop or Android phone running Agrilens.',
+                    'On the Digital Probe page, set the <strong>Baud rate</strong> (default 9600) and <strong>Slave address</strong> (default 1) to match the probe — check its datasheet if unsure.',
+                    'Click <strong>Connect</strong>, then pick the probe\'s port from the browser prompt (Chrome or Edge required — this uses the Web Serial API).',
+                    'Click <strong>Read Sensor</strong>. The live pH/N/P/K reading populates the Review &amp; Confirm form automatically.',
+                    'Optionally fill in <strong>Probe Model</strong> (e.g. "Yago 8-in-1") for traceability on the report.',
+                    'Review the values, edit any field if needed, then click <strong>Confirm &amp; Save</strong>.',
+                ];
+                @endphp
+                @foreach($probeSteps as $i => $s)
+                <div class="step-row">
+                    <span class="step-badge" style="background:#2e7d32;">{{ $i + 1 }}</span>
+                    <p>{!! $s !!}</p>
+                </div>
+                @endforeach
+                <div class="alert alert-secondary small mt-2 mb-0">
+                    <i class="fas fa-circle-info me-1"></i>
+                    No probe on hand, or the browser doesn't support Web Serial? Use <strong>Or enter a reading
+                    manually</strong> on the same page to paste a raw JSON reading
+                    (<code class="key">{"probe_id":"...","ph":6.5,"n":42,"p":18.5,"k":150}</code>), or fall back to
+                    <a href="#method-manual">Manual Input</a>.
+                </div>
             </div>
         </div>
 
@@ -806,34 +937,24 @@
                     </div>
                     <i class="fas fa-arrow-right text-muted"></i>
                     <div class="text-center">
-                        <div class="badge bg-dark p-2" style="font-size:.8rem;">pH Test (CPR)</div>
+                        <div class="badge bg-dark p-2" style="font-size:.8rem;">Select Analysis Type</div>
                     </div>
                     <i class="fas fa-arrow-right text-muted"></i>
                     <div class="text-center">
-                        <div class="badge bg-dark p-2" style="font-size:.8rem;">pH Step 2 (if needed)</div>
+                        <div class="badge bg-success p-2" style="font-size:.8rem;">Manual</div>
+                        <div class="badge bg-success p-2 mt-1" style="font-size:.8rem;">Colorimetric (pH → N → P → K)</div>
+                        <div class="badge bg-success p-2 mt-1" style="font-size:.8rem;">Digital Probe (USB)</div>
                     </div>
                     <i class="fas fa-arrow-right text-muted"></i>
                     <div class="text-center">
-                        <div class="badge bg-success p-2" style="font-size:.8rem;">Nitrogen</div>
-                    </div>
-                    <i class="fas fa-arrow-right text-muted"></i>
-                    <div class="text-center">
-                        <div class="badge bg-primary p-2" style="font-size:.8rem;">Phosphorus</div>
-                    </div>
-                    <i class="fas fa-arrow-right text-muted"></i>
-                    <div class="text-center">
-                        <div class="badge bg-info p-2" style="font-size:.8rem;">Potassium</div>
-                    </div>
-                    <i class="fas fa-arrow-right text-muted"></i>
-                    <div class="text-center">
-                        <div class="badge bg-warning text-dark p-2" style="font-size:.8rem;">Fertilizer Rec.</div>
+                        <div class="badge bg-warning text-dark p-2" style="font-size:.8rem;">Fertility Score &amp; Fertilizer Rec.</div>
                     </div>
                 </div>
                 <p class="text-muted small mb-0">
-                    Each test page shows a <strong>progress pill bar</strong> at the top so you always know which step is active and which are complete
+                    Whichever method you pick, the Colorimetric Webcam steps show a <strong>progress pill bar</strong> at the top so you always know which step is active and which are complete
                     (<i class="fas fa-check-circle text-success fa-xs"></i> = done,
                     <i class="fas fa-circle-dot fa-xs text-primary"></i> = active,
-                    <i class="fas fa-circle fa-xs text-muted"></i> = pending).
+                    <i class="fas fa-circle fa-xs text-muted"></i> = pending). Manual and Digital Probe each complete in a single step.
                 </p>
             </div>
         </div>
@@ -860,9 +981,9 @@
                         <div class="border rounded p-3 h-100">
                             <h6 class="fw-bold"><i class="fas fa-user text-success me-1"></i>Technician</h6>
                             <ul class="mb-0 small">
-                                <li>Can view and test <strong>their own</strong> samples only</li>
-                                <li>Can create new samples and manage farmers</li>
-                                <li>Runs all 4 BSWM tests per sample</li>
+                                <li>Barangay-scoped access — can view and test samples for their assigned barangay(s) only</li>
+                                <li>Registers farmers and farms, and maps farm boundaries by GPS</li>
+                                <li>Creates samples and runs any of the three analysis methods (Manual, Colorimetric, Digital Probe)</li>
                                 <li>Can export their own sample reports</li>
                             </ul>
                         </div>
@@ -984,6 +1105,43 @@
                         <div id="t5" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
                             <div class="accordion-body small">
                                 This means the soil's measured nutrient level <strong>meets or exceeds</strong> what the selected crop requires — no additional fertilizer is needed for that nutrient. Check that you selected the correct crop and that all 3 N/P/K tests are completed (not just pH).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#t6">
+                                Digital Probe won't connect / "Connect" button does nothing
+                            </button>
+                        </h2>
+                        <div id="t6" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                            <div class="accordion-body small">
+                                <ul class="mb-0">
+                                    <li>The <strong>Web Serial API</strong> is required — use desktop Chrome or Edge. It is not supported on Firefox, Safari, or most mobile browsers.</li>
+                                    <li>The page must be served over <strong>HTTPS</strong> (or <code class="key">localhost</code> during development).</li>
+                                    <li>Make sure the probe's USB/RS485 cable is actually plugged in before clicking Connect, and select the correct port when the browser prompts you.</li>
+                                    <li>If <strong>Read Sensor</strong> returns no data, double-check the <strong>Baud rate</strong> and <strong>Slave address</strong> against the probe's datasheet — defaults are 9600 and 1.</li>
+                                    <li>As a fallback, use <strong>Or enter a reading manually</strong> on the same page, or switch to <a href="#method-manual">Manual Input</a>.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#t7">
+                                "Capture My Location" fails or Preview Map Boundary stays disabled
+                            </button>
+                        </h2>
+                        <div id="t7" class="accordion-collapse collapse" data-bs-parent="#troubleAccordion">
+                            <div class="accordion-body small">
+                                <ul class="mb-0">
+                                    <li>Make sure you clicked "Allow" when the browser asked for your location, and that device/OS-level location services are turned on.</li>
+                                    <li>GPS capture requires HTTPS (or <code class="key">localhost</code>) — it will silently fail on plain HTTP.</li>
+                                    <li><strong>Preview Map Boundary</strong> stays disabled until at least <strong>3 GPS points</strong> have been added, from either the Live or Manual tab (or a mix of both).</li>
+                                    <li>If the boundary preview shows red with an overlap warning, adjust or remove points until it no longer intersects a neighboring farm.</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
