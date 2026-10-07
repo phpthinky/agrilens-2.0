@@ -43,7 +43,7 @@
                     <div class="mb-3">
                         <label class="form-label">User Type</label>
                         <select class="form-control" name="user_type" required>
-                            @foreach(['farmer','professional','admin'] as $type)
+                            @foreach(['farmer','technician','admin'] as $type)
                             <option value="{{ $type }}" {{ ($editUser && $editUser->user_type === $type) ? 'selected' : '' }}>{{ ucfirst($type) }}</option>
                             @endforeach
                         </select>
@@ -99,7 +99,7 @@
                                 </td>
                                 <td>{{ $user->email }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $user->user_type === 'admin' ? 'danger' : ($user->user_type === 'professional' ? 'warning' : 'success') }}">
+                                    <span class="badge bg-{{ $user->user_type === 'admin' ? 'danger' : ($user->user_type === 'technician' ? 'warning' : 'success') }}">
                                         {{ ucfirst($user->user_type) }}
                                     </span>
                                 </td>

@@ -32,7 +32,7 @@ class UserController extends Controller
             'username'  => 'required|string|max:50|unique:users',
             'email'     => 'required|email|max:100|unique:users',
             'password'  => 'required|string|min:6',
-            'user_type' => 'required|in:farmer,professional,admin',
+            'user_type' => 'required|in:farmer,technician,admin',
         ]);
 
         User::create([
@@ -50,7 +50,7 @@ class UserController extends Controller
         $request->validate([
             'username'  => 'required|string|max:50|unique:users,username,' . $user->id,
             'email'     => 'required|email|max:100|unique:users,email,' . $user->id,
-            'user_type' => 'required|in:farmer,professional,admin',
+            'user_type' => 'required|in:farmer,technician,admin',
             'password'  => 'nullable|string|min:6',
         ]);
 
