@@ -8,16 +8,24 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     protected $fillable = [
         'username',
         'email',
         'password',
         'user_type',
+        'photo_path',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'suffix',
+        'address',
     ];
 
     protected $hidden = [
@@ -37,6 +45,20 @@ class User extends Authenticatable
         return $this->user_type === 'admin';
     }
 
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->photo_path ? Storage::disk('public')->url($this->photo_path) : null;
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        $name = implode(' ', array_filter([$this->first_name, $this->middle_name, $this->last_name]));
+        if ($name === '') {
+            return $this->username;
+        }
+        return $this->suffix ? $name . ' ' . $this->suffix : $name;
+    }
+
     public function soilSamples(): HasMany
     {
         return $this->hasMany(SoilSample::class);
@@ -46,6 +68,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Barangay::class, 'technician_barangay', 'technician_id', 'barangay_id')
             ->withTimestamps();
+    }
+
+    public function testAssignments(): HasMany
+    {
+        return $this->hasMany(SoilTestAssignment::class, 'assigned_technician_id');
     }
 
     public function getAccessibleBarangayIds(): array

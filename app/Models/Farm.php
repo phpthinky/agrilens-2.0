@@ -43,6 +43,11 @@ class Farm extends Model
         return $this->hasMany(SoilSample::class);
     }
 
+    public function testAssignments(): HasMany
+    {
+        return $this->hasMany(SoilTestAssignment::class);
+    }
+
     public function getFormattedAreaAttribute(): string
     {
         return $this->area_hectares ? number_format($this->area_hectares, 4) . ' ha' : 'N/A';

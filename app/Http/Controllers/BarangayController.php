@@ -11,7 +11,7 @@ class BarangayController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Barangay::withCount(['farmers', 'farms']);
+        $query = Barangay::withCount(['farmers', 'farms'])->with('assignedTechnicians');
 
         if ($request->filled('search')) {
             $search = $request->search;

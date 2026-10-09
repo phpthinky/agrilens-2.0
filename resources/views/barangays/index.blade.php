@@ -49,7 +49,7 @@
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-success">
                     <tr>
-                        <th>Name</th><th>Code</th><th>Farmers</th><th>Farms</th><th>Area</th><th>Status</th><th>Actions</th>
+                        <th>Name</th><th>Code</th><th>Farmers</th><th>Farms</th><th>Area</th><th>Assigned Technician</th><th>Status</th><th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,6 +60,13 @@
                         <td>{{ $b->farmers_count }}</td>
                         <td>{{ $b->farms_count }}</td>
                         <td>{{ $b->formatted_area }}</td>
+                        <td>
+                            @forelse($b->assignedTechnicians as $tech)
+                                <span class="badge bg-info text-dark">{{ $tech->username }}</span>
+                            @empty
+                                <span class="text-muted small">Unassigned</span>
+                            @endforelse
+                        </td>
                         <td>
                             @if($b->is_active)
                                 <span class="badge bg-success">Active</span>

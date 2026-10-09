@@ -8,6 +8,7 @@ use App\Http\Controllers\ColorReadingController;
 use App\Http\Controllers\AiRecommendationController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\TechnicianAssignmentController;
 use App\Http\Controllers\Admin\NpkColorChartController;
 use App\Http\Controllers\Admin\PhColorChartController;
 use App\Http\Controllers\Admin\CropFertilizerScheduleController;
@@ -136,9 +137,16 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard',        [DashboardController::class, 'admin'])->name('dashboard');
         Route::get('/users',            [UserController::class, 'index'])->name('users');
+        Route::get('/users/{user}',     [UserController::class, 'show'])->name('users.show');
         Route::post('/users',           [UserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}',     [UserController::class, 'update'])->name('users.update');
+        Route::post('/users/{user}/photo', [UserController::class, 'updatePhoto'])->name('users.photo');
         Route::delete('/users/{user}',  [UserController::class, 'destroy'])->name('users.destroy');
+
+        // Scheduling a farm for testing — tied to a specific technician, shown on their profile
+        Route::post('/users/{user}/assignments', [TechnicianAssignmentController::class, 'store'])->name('users.assignments.store');
+        Route::patch('/users/{user}/assignments/{assignment}/cancel', [TechnicianAssignmentController::class, 'cancel'])->name('users.assignments.cancel');
+        Route::delete('/users/{user}/assignments/{assignment}', [TechnicianAssignmentController::class, 'destroy'])->name('users.assignments.destroy');
 
         // pH Color Chart management
         Route::get('/ph-color-charts',                      [PhColorChartController::class, 'index'])->name('ph-color-charts');
