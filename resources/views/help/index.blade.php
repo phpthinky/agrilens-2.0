@@ -234,14 +234,25 @@
                     <span class="badge bg-success me-1"><i class="fas fa-microchip"></i></span> Digital Probe (USB)
                 </h6>
                 <p class="small mb-2">
-                    For a handheld 7/8-in-1 RS485 soil probe (e.g. a Yago 8-in-1) connected over a USB-to-RS485
-                    cable. This reads pH, N, P, and K live from the probe — no manual transcription needed.
+                    For a handheld 7/8-in-1 RS485 soil probe (e.g. a Yago 8-in-1). This reads pH, N, P, and K
+                    live from the probe — no manual transcription needed. There are two ways to connect it,
+                    depending on the device you have in hand:
                 </p>
+
+                <div class="alert alert-light border small mb-3">
+                    <strong>Which one do I use?</strong>
+                    <span class="badge bg-success ms-1">Laptop / Desktop</span> → <strong>Connect Sensor</strong> on this website.
+                    <span class="badge bg-success ms-1">Android phone in the field</span> → the
+                    <a href="{{ route('download-app') }}">Technician App</a> (USB-OTG cable).
+                    Browsers cannot read a USB-OTG probe directly on Android, which is why the standalone app exists.
+                </div>
+
+                <p class="fw-bold small mb-1">Option A — Laptop / Desktop browser (Web Serial)</p>
                 @php
                 $probeSteps = [
-                    'Plug the probe\'s USB cable into the laptop or Android phone running Agrilens.',
-                    'On the Digital Probe page, set the <strong>Baud rate</strong> (default 9600) and <strong>Slave address</strong> (default 1) to match the probe — check its datasheet if unsure.',
-                    'Click <strong>Connect</strong>, then pick the probe\'s port from the browser prompt (Chrome or Edge required — this uses the Web Serial API).',
+                    'Plug the probe\'s USB cable into the laptop or desktop running Agrilens in Chrome or Edge.',
+                    'On the Digital Probe page, click <strong>Connect Sensor</strong>, then set the <strong>Baud rate</strong> (default 9600) and <strong>Slave address</strong> (default 1) to match the probe — check its datasheet if unsure.',
+                    'Click <strong>Connect</strong>, then pick the probe\'s port from the browser prompt (this uses the Web Serial API, which desktop Chrome/Edge support).',
                     'Click <strong>Read Sensor</strong>. The live pH/N/P/K reading populates the Review &amp; Confirm form automatically.',
                     'Optionally fill in <strong>Probe Model</strong> (e.g. "Yago 8-in-1") for traceability on the report.',
                     'Review the values, edit any field if needed, then click <strong>Confirm &amp; Save</strong>.',
@@ -253,10 +264,27 @@
                     <p>{!! $s !!}</p>
                 </div>
                 @endforeach
-                <div class="alert alert-secondary small mt-2 mb-0">
+
+                <p class="fw-bold small mb-1 mt-3">Option B — Android Technician App (USB-OTG, for field use)</p>
+                @php
+                $probeAppSteps = [
+                    'Install the app from <a href="'.route('download-app').'">Download Technician App</a> and log in with your Agrilens account.',
+                    'Connect the probe to the phone with a USB-OTG adapter cable. If your phone has a separate OTG toggle in Settings, turn it on.',
+                    'Open your scheduled farm in the app, tap to connect — the app detects the probe automatically over USB.',
+                    'Review the live pH/N/P/K reading, then save. It syncs to this website as a completed analysis.',
+                ];
+                @endphp
+                @foreach($probeAppSteps as $i => $s)
+                <div class="step-row">
+                    <span class="step-badge" style="background:#2e7d32;">{{ $i + 1 }}</span>
+                    <p>{!! $s !!}</p>
+                </div>
+                @endforeach
+
+                <div class="alert alert-secondary small mt-3 mb-0">
                     <i class="fas fa-circle-info me-1"></i>
                     No probe on hand, or the browser doesn't support Web Serial? Use <strong>Or enter a reading
-                    manually</strong> on the same page to paste a raw JSON reading
+                    manually</strong> on the Digital Probe page to paste a raw JSON reading
                     (<code class="key">{"probe_id":"...","ph":6.5,"n":42,"p":18.5,"k":150}</code>), or fall back to
                     <a href="#method-manual">Manual Input</a>.
                 </div>

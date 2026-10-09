@@ -22,6 +22,7 @@ use App\Http\Controllers\GeminiCropRecommendationController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\CropRequirementsController;
 use App\Http\Controllers\CropController;
+use App\Http\Controllers\DownloadController;
 use Illuminate\Support\Facades\Route;
 
 // Root: authenticated users go to their dashboard, guests see the public map.
@@ -38,6 +39,9 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+
+// ── Technician app download (public, so a technician can grab it before logging in) ──
+Route::get('/download-app', [DownloadController::class, 'index'])->name('download-app');
 
 // ── Public map ──────────────────────────────────────────────────────────────
 Route::get('/map', [PublicMapController::class, 'index'])->name('public.map');

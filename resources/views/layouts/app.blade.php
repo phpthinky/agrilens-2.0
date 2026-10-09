@@ -308,6 +308,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{{ route('download-app') }}">
+                        <i class="fa fa-mobile-screen-button me-2"></i> Download Technician App
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <i class="fa fa-sign-out-alt me-2"></i> Logout
                     </a>
