@@ -78,6 +78,11 @@ class SoilSample extends Model
         return $this->hasOne(PhTest::class, 'sample_id');
     }
 
+    public function testAssignment(): HasOne
+    {
+        return $this->hasOne(SoilTestAssignment::class, 'soil_sample_id');
+    }
+
     public function colorReadings(): HasMany
     {
         return $this->hasMany(SoilColorReading::class, 'sample_id');

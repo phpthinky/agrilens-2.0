@@ -58,8 +58,34 @@
     </div>
 </div>
 
+{{-- ── DIGITAL PROBE: scheduled, waiting on the mobile app ─────────────────── --}}
+@if(!$sample->isAnalyzed() && $sample->analysis_type === 'probe')
+@php $assignment = $sample->testAssignment; @endphp
+<div class="card border-success mb-4">
+    <div class="card-header bg-success text-white">
+        <i class="fas fa-mobile-screen-button me-2"></i>Scheduled for Digital Probe Analysis
+    </div>
+    <div class="card-body">
+        <p class="mb-2">
+            This sample is scheduled for digital probe testing. Testing itself happens in the field —
+            open the <strong>AgriLens Field</strong> mobile app on the assigned technician's phone, find this
+            task, and read the 8-in-1 NPK sensor over USB-OTG. Results will appear here automatically once saved.
+        </p>
+        @if($assignment)
+        <p class="text-muted small mb-3">
+            Scheduled date: <strong>{{ $assignment->scheduled_date->format('M j, Y') }}</strong>
+            &middot; Status: <strong>{{ ucfirst(str_replace('_', ' ', $assignment->displayStatus())) }}</strong>
+        </p>
+        @endif
+        <a href="{{ route('download-app') }}" class="btn btn-outline-success">
+            <i class="fas fa-download me-1"></i>Download the Technician App
+        </a>
+    </div>
+</div>
+@endif
+
 {{-- ── TESTING PROGRESS SECTION ────────────────────────────────────────────── --}}
-@if(!$sample->isAnalyzed())
+@if(!$sample->isAnalyzed() && $sample->analysis_type !== 'probe')
 @php
 $ph_count = count($readings['ph'] ?? []);
 $n_count  = count($readings['nitrogen'] ?? []);

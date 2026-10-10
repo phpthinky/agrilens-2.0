@@ -57,34 +57,6 @@
         @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
     <div class="col-md-6">
-        <label class="form-label">ID Type</label>
-        <input type="text" name="id_type" class="form-control" value="{{ old('id_type', $farmer?->id_type) }}" placeholder="Driver's License, National ID...">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">ID Number</label>
-        <input type="text" name="id_number" class="form-control" value="{{ old('id_number', $farmer?->id_number) }}">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Farmer Type *</label>
-        <select name="farmer_type" class="form-select" required>
-            @foreach(['Owner', 'Tenant', 'Caretaker', 'Other'] as $t)
-                <option value="{{ $t }}" {{ old('farmer_type', $farmer?->farmer_type ?? 'Owner') === $t ? 'selected' : '' }}>{{ $t }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Years Farming</label>
-        <input type="number" name="years_farming" class="form-control" min="0" max="99" value="{{ old('years_farming', $farmer?->years_farming) }}">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Total Farm Area (ha)</label>
-        <input type="number" step="0.01" name="total_farm_area" class="form-control" value="{{ old('total_farm_area', $farmer?->total_farm_area) }}">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Crops Grown</label>
-        <input type="text" name="crops_grown" class="form-control" value="{{ old('crops_grown', $farmer?->crops_grown) }}" placeholder="Comma-separated, e.g. Rice, Corn">
-    </div>
-    <div class="col-md-6">
         <label class="form-label">Education Level</label>
         <select name="education_level" class="form-select">
             <option value="">Not specified</option>
@@ -92,10 +64,6 @@
                 <option value="{{ $lvl }}" {{ old('education_level', $farmer?->education_level) === $lvl ? 'selected' : '' }}>{{ $lvl }}</option>
             @endforeach
         </select>
-    </div>
-    <div class="col-12">
-        <label class="form-label">Notes</label>
-        <textarea name="notes" class="form-control" rows="2">{{ old('notes', $farmer?->notes) }}</textarea>
     </div>
     <div class="col-12">
         <div class="form-check">

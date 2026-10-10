@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barangay;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -37,8 +36,7 @@ class BarangayController extends Controller
 
     public function create()
     {
-        $technicians = User::where('user_type', '!=', 'admin')->orderBy('username')->get();
-        return view('barangays.create', compact('technicians'));
+        return view('barangays.create');
     }
 
     public function store(Request $request)
@@ -49,16 +47,11 @@ class BarangayController extends Controller
             'description' => 'nullable|string|max:1000',
             'area_hectares' => 'nullable|numeric|min:0|max:999999.99',
             'population' => 'nullable|integer|min:0|max:999999',
-            'technician_ids' => 'nullable|array',
-            'technician_ids.*' => 'exists:users,id',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
-        $technicianIds = $validated['technician_ids'] ?? [];
-        unset($validated['technician_ids']);
 
         $barangay = Barangay::create($validated);
-        $barangay->assignedTechnicians()->sync($technicianIds);
 
         return redirect()->route('barangays.index')
             ->with('success', "Barangay '{$barangay->name}' created successfully.");
@@ -82,10 +75,7 @@ class BarangayController extends Controller
 
     public function edit(Barangay $barangay)
     {
-        $technicians = User::where('user_type', '!=', 'admin')->orderBy('username')->get();
-        $assignedTechnicianIds = $barangay->assignedTechnicians()->pluck('users.id')->toArray();
-
-        return view('barangays.edit', compact('barangay', 'technicians', 'assignedTechnicianIds'));
+        return view('barangays.edit', compact('barangay'));
     }
 
     public function update(Request $request, Barangay $barangay)
@@ -96,16 +86,11 @@ class BarangayController extends Controller
             'description' => 'nullable|string|max:1000',
             'area_hectares' => 'nullable|numeric|min:0|max:999999.99',
             'population' => 'nullable|integer|min:0|max:999999',
-            'technician_ids' => 'nullable|array',
-            'technician_ids.*' => 'exists:users,id',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
-        $technicianIds = $validated['technician_ids'] ?? [];
-        unset($validated['technician_ids']);
 
         $barangay->update($validated);
-        $barangay->assignedTechnicians()->sync($technicianIds);
 
         return redirect()->route('barangays.index')
             ->with('success', "Barangay '{$barangay->name}' updated successfully.");

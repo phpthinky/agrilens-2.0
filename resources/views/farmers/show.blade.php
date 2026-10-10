@@ -5,7 +5,7 @@
 <div class="row mb-3">
     <div class="col-md-8">
         <h2><i class="fas fa-user-tie me-2"></i>{{ $farmer->full_name }}</h2>
-        <p class="text-muted mb-0">{{ $farmer->barangay?->name ?? 'No barangay assigned' }} &middot; {{ $farmer->farmer_type }}</p>
+        <p class="text-muted mb-0">{{ $farmer->barangay?->name ?? 'No barangay assigned' }}</p>
     </div>
     <div class="col-md-4 text-end">
         <a href="{{ route('farmers.edit', $farmer) }}" class="btn btn-outline-secondary"><i class="fas fa-edit me-1"></i>Edit</a>
@@ -24,11 +24,7 @@
                     <dt class="col-sm-4">Contact</dt><dd class="col-sm-8">{{ $farmer->contact_number ?: '—' }}</dd>
                     <dt class="col-sm-4">Email</dt><dd class="col-sm-8">{{ $farmer->email ?: '—' }}</dd>
                     <dt class="col-sm-4">Address</dt><dd class="col-sm-8">{{ $farmer->address }}</dd>
-                    <dt class="col-sm-4">ID</dt><dd class="col-sm-8">{{ $farmer->id_type ? "{$farmer->id_type} — {$farmer->id_number}" : '—' }}</dd>
-                    <dt class="col-sm-4">Years Farming</dt><dd class="col-sm-8">{{ $farmer->years_farming ?? '—' }}</dd>
-                    <dt class="col-sm-4">Crops Grown</dt><dd class="col-sm-8">{{ $farmer->formatted_crops }}</dd>
                     <dt class="col-sm-4">Education</dt><dd class="col-sm-8">{{ $farmer->education_level ?: '—' }}</dd>
-                    <dt class="col-sm-4">Notes</dt><dd class="col-sm-8">{{ $farmer->notes ?: '—' }}</dd>
                 </dl>
             </div>
         </div>

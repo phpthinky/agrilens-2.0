@@ -7,6 +7,7 @@ use App\Models\Farm;
 use App\Models\NpkColorChart;
 use App\Models\PhColorChart;
 use App\Models\SoilSample;
+use App\Models\SoilTestAssignment;
 use App\Services\ColorScienceService;
 use App\Services\FertilizerService;
 use Illuminate\Http\Request;
@@ -171,6 +172,34 @@ class AnalysisController extends Controller
     }
 
     // ── Digital Probe ─────────────────────────────────────────────────
+
+    /**
+     * Mirrors startColorimetric(), but the actual reading doesn't happen in
+     * the browser — it's scheduled as a SoilTestAssignment so it shows up as
+     * a pending task in the technician's mobile app, which completes it
+     * (AssignmentController::complete) using the probe hardware over USB-OTG.
+     */
+    public function startProbe(SoilSample $sample)
+    {
+        $this->authoriseSample($sample);
+
+        $sample->update(['analysis_type' => 'probe']);
+
+        if (!SoilTestAssignment::where('soil_sample_id', $sample->id)->exists()) {
+            SoilTestAssignment::create([
+                'farm_id' => $sample->farm_id,
+                'assigned_technician_id' => Auth::id(),
+                'scheduled_date' => now()->toDateString(),
+                'status' => 'pending',
+                'assigned_by' => Auth::id(),
+                'soil_sample_id' => $sample->id,
+                'notes' => "Scheduled from the web for sample '{$sample->sample_name}'.",
+            ]);
+        }
+
+        return redirect()->route('samples.show', $sample)
+            ->with('success', 'Scheduled for digital probe analysis — it now appears as a pending task in the Technician App.');
+    }
 
     public function createProbe(SoilSample $sample)
     {

@@ -7,7 +7,9 @@
         <h2><i class="fas fa-city me-2"></i>{{ $barangay->name }} <span class="badge bg-secondary">{{ $barangay->code }}</span></h2>
     </div>
     <div class="col-md-4 text-end">
+        @if(auth()->user()->isAdmin())
         <a href="{{ route('barangays.edit', $barangay) }}" class="btn btn-outline-secondary"><i class="fas fa-edit me-1"></i>Edit</a>
+        @endif
         <a href="{{ route('barangays.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i></a>
     </div>
 </div>

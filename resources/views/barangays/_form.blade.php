@@ -1,5 +1,3 @@
-@php $assignedIds = $assignedTechnicianIds ?? []; @endphp
-
 <div class="row g-3">
     <div class="col-md-6">
         <label class="form-label">Barangay Name *</label>
@@ -26,17 +24,6 @@
         <label class="form-label">Population</label>
         <input type="number" name="population" class="form-control"
                value="{{ old('population', $barangay?->population) }}">
-    </div>
-    <div class="col-12">
-        <label class="form-label">Assigned Technicians</label>
-        <select name="technician_ids[]" class="form-select" multiple size="5">
-            @foreach($technicians as $tech)
-                <option value="{{ $tech->id }}" {{ in_array($tech->id, $assignedIds) ? 'selected' : '' }}>
-                    {{ $tech->username }}
-                </option>
-            @endforeach
-        </select>
-        <div class="form-text">Hold Ctrl/Cmd to select multiple technicians.</div>
     </div>
     <div class="col-12">
         <div class="form-check">

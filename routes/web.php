@@ -79,8 +79,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/ai-recommendation',         [AiRecommendationController::class,       'generate'])->name('ai-recommendation.generate');
     Route::post('/api/gemini-crop-recommendations',[GeminiCropRecommendationController::class, 'generate'])->name('gemini-crop-recommendations.generate');
 
-    // Barangays
-    Route::resource('barangays', BarangayController::class);
+    // Barangays — view-only for technicians; creating/editing/deleting is admin-only
+    // (technician-barangay *assignment* itself is handled exclusively by Technician Management).
+    // NOTE: barangays.show is registered further below, after barangays/create,
+    // so "/barangays/create" doesn't get swallowed by the {barangay} wildcard.
+    Route::get('/barangays', [BarangayController::class, 'index'])->name('barangays.index');
 
     // Farmers (ported from Version 1 — replaces the old simple Add-Farmer flow)
     Route::get('/farmers',                [FarmerController::class, 'index'])->name('farmers.index');
@@ -115,6 +118,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/samples/{sample}/manual',              [AnalysisController::class, 'createManual'])->name('analyses.create.manual');
     Route::post('/samples/{sample}/manual',             [AnalysisController::class, 'storeManual'])->name('analyses.store.manual');
     Route::post('/samples/{sample}/colorimetric/start', [AnalysisController::class, 'startColorimetric'])->name('analyses.start.colorimetric');
+    Route::post('/samples/{sample}/probe/start',        [AnalysisController::class, 'startProbe'])->name('analyses.start.probe');
     Route::get('/samples/{sample}/probe',               [AnalysisController::class, 'createProbe'])->name('analyses.create.probe');
     Route::post('/samples/{sample}/probe/confirm',      [AnalysisController::class, 'storeProbe'])->name('analyses.store.probe');
 
@@ -138,9 +142,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/crops/{crop}',    [CropController::class, 'destroy'])->name('crops.destroy');
 
     // ── Admin-only ────────────────────────────────────────────────────────────
+    Route::middleware('can:admin')->group(function () {
+        Route::get('/barangays/create',      [BarangayController::class, 'create'])->name('barangays.create');
+        Route::post('/barangays',            [BarangayController::class, 'store'])->name('barangays.store');
+        Route::get('/barangays/{barangay}/edit', [BarangayController::class, 'edit'])->name('barangays.edit');
+        Route::put('/barangays/{barangay}',  [BarangayController::class, 'update'])->name('barangays.update');
+        Route::delete('/barangays/{barangay}', [BarangayController::class, 'destroy'])->name('barangays.destroy');
+    });
+
+    Route::get('/barangays/{barangay}', [BarangayController::class, 'show'])->name('barangays.show');
+
     Route::middleware('can:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard',        [DashboardController::class, 'admin'])->name('dashboard');
         Route::get('/users',            [UserController::class, 'index'])->name('users');
+        Route::get('/users/create',     [UserController::class, 'create'])->name('users.create');
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::get('/users/{user}',     [UserController::class, 'show'])->name('users.show');
         Route::post('/users',           [UserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}',     [UserController::class, 'update'])->name('users.update');

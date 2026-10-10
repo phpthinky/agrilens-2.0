@@ -51,10 +51,13 @@
                 <i class="fas fa-microchip fa-3x text-success mb-3"></i>
                 <h5>Digital Probe</h5>
                 <p class="text-muted small flex-grow-1">
-                    Connect the 8-in-1 NPK sensor over USB (built-in RS485) to auto-populate readings.
-                    <br><small>On a laptop/desktop browser, use <strong>Connect Sensor</strong> below. In the field on a phone, use the <a href="{{ route('download-app') }}">Technician App</a> instead (USB-OTG).</small>
+                    Schedule this sample for digital probe testing — it will appear as a pending task in the Technician App, where the 8-in-1 NPK sensor is read over USB-OTG.
+                    <br><small>Don't have the app yet? <a href="{{ route('download-app') }}">Download it here</a>.</small>
                 </p>
-                <a href="{{ route('analyses.create.probe', $sample) }}" class="btn btn-success mt-auto">Connect Sensor</a>
+                <form method="POST" action="{{ route('analyses.start.probe', $sample) }}" class="mt-auto">
+                    @csrf
+                    <button type="submit" class="btn btn-success w-100">Schedule Digital Probe Analysis</button>
+                </form>
             </div>
         </div>
     </div>

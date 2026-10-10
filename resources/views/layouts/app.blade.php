@@ -230,8 +230,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}" href="{{ route('admin.users') }}">
-                            <i class="fa fa-users me-2"></i> Users
+                        <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" href="{{ route('admin.users') }}">
+                            <i class="fa fa-users me-2"></i> Technician
                         </a>
                     </li>
                     
@@ -284,6 +284,7 @@
                         <i class="fa fa-file-csv me-2"></i> Full Export
                     </a>
                 </li>
+                @if(Auth::user()->isAdmin())
                 <li class="sidebar-header">System Operations</li>
 
                 <li class="nav-item">
@@ -301,6 +302,7 @@
                         <i class="fa fa-seedling me-2"></i> Crops
                     </a>
                 </li>
+                @endif
 
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('help.index') ? 'active' : '' }}" href="{{ route('help.index') }}">

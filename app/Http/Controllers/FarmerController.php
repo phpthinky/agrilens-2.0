@@ -22,14 +22,7 @@ class FarmerController extends Controller
             'contact_number' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255|unique:farmers,email' . ($farmer ? ",{$farmer->id}" : ''),
             'address' => 'required|string|max:500',
-            'id_type' => 'nullable|string|max:100',
-            'id_number' => 'nullable|string|max:100',
-            'farmer_type' => 'required|in:Owner,Tenant,Caretaker,Other',
-            'years_farming' => 'nullable|integer|min:0|max:99',
-            'crops_grown' => 'nullable|string|max:1000',
-            'total_farm_area' => 'nullable|numeric|min:0|max:999999.99',
             'education_level' => 'nullable|in:Elementary,Elementary Graduate,High School,High School Graduate,Vocational,College,College Graduate,Post Graduate',
-            'notes' => 'nullable|string|max:1000',
         ];
     }
 

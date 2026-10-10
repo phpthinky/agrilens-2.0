@@ -7,11 +7,13 @@
         <h2><i class="fas fa-city me-2"></i>Barangays</h2>
         <p class="lead text-muted">Manage barangays and technician territory assignments</p>
     </div>
+    @if(auth()->user()->isAdmin())
     <div class="col-md-4 text-end">
         <a href="{{ route('barangays.create') }}" class="btn btn-success">
             <i class="fas fa-plus-circle me-1"></i> New Barangay
         </a>
     </div>
+    @endif
 </div>
 
 <div class="card mb-3">
@@ -40,9 +42,11 @@
         <div class="text-center py-5">
             <i class="fas fa-city fa-3x text-muted mb-3"></i>
             <p class="text-muted">No barangays yet.</p>
+            @if(auth()->user()->isAdmin())
             <a href="{{ route('barangays.create') }}" class="btn btn-success">
                 <i class="fas fa-plus-circle"></i> Add Your First Barangay
             </a>
+            @endif
         </div>
         @else
         <div class="table-responsive">
@@ -76,11 +80,13 @@
                         </td>
                         <td>
                             <a href="{{ route('barangays.show', $b) }}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></a>
+                            @if(auth()->user()->isAdmin())
                             <a href="{{ route('barangays.edit', $b) }}" class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></a>
                             <form action="{{ route('barangays.destroy', $b) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this barangay?');">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                             </form>
+                            @endif
                         </td>
                     </tr>
                     @endforeach

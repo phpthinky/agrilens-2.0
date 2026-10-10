@@ -64,6 +64,8 @@
                         <td>
                             @if($s->analyzed_at)
                                 <span class="badge bg-success">Analyzed</span>
+                            @elseif($s->analysis_type === 'probe')
+                                <span class="badge bg-info text-dark">Scheduled — Digital Probe</span>
                             @elseif($s->ph_color_hex)
                                 <span class="badge bg-warning text-dark">In Progress</span>
                             @else

@@ -16,17 +16,24 @@ class UserController extends Controller
     public function index()
     {
         // Technician Management: farmer accounts aren't relevant here.
-        $users    = User::where('user_type', '!=', 'farmer')->latest()->get();
-        $editUser = null;
-        $assignedBarangayIds = [];
+        $users = User::where('user_type', '!=', 'farmer')->latest()->get();
+
+        return view('admin.users', compact('users'));
+    }
+
+    public function create()
+    {
         $barangays = Barangay::active()->orderBy('name')->get();
 
-        if (request('edit_id')) {
-            $editUser = User::findOrFail(request('edit_id'));
-            $assignedBarangayIds = $editUser->assignedBarangays()->pluck('barangays.id')->all();
-        }
+        return view('admin.users.create', compact('barangays'));
+    }
 
-        return view('admin.users', compact('users', 'editUser', 'barangays', 'assignedBarangayIds'));
+    public function edit(User $user)
+    {
+        $barangays = Barangay::active()->orderBy('name')->get();
+        $assignedBarangayIds = $user->assignedBarangays()->pluck('barangays.id')->all();
+
+        return view('admin.users.edit', compact('user', 'barangays', 'assignedBarangayIds'));
     }
 
     public function show(User $user)
@@ -78,7 +85,7 @@ class UserController extends Controller
             'user_type' => 'required|in:farmer,technician,admin',
         ], $this->nameRules()));
 
-        User::create([
+        $user = User::create([
             'username'    => $request->username,
             'email'       => $request->email,
             'password'    => Hash::make($request->password),
@@ -89,6 +96,8 @@ class UserController extends Controller
             'suffix'      => $request->suffix,
             'address'     => $request->address,
         ]);
+
+        $user->assignedBarangays()->sync($request->input('barangay_ids', []));
 
         return redirect()->route('admin.users')->with('success', 'Technician added successfully!');
     }
