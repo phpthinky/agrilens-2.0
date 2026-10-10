@@ -48,7 +48,27 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Analyst</label>
-                    <input type="text" class="form-control" value="{{ Auth::user()->username }}" disabled>
+                    @if(Auth::user()->isAdmin())
+                        <select name="analyst_id" class="form-select">
+                            @foreach($technicians as $tech)
+                                <option value="{{ $tech->id }}" {{ old('analyst_id', optional($technicians->first())->id) == $tech->id ? 'selected' : '' }}>
+                                    {{ $tech->username }}
+                                </option>
+                            @endforeach
+                            <option value="{{ Auth::id() }}" {{ $technicians->isEmpty() ? 'selected' : '' }}>
+                                {{ Auth::user()->username }} (you)
+                            </option>
+                        </select>
+                        <div class="form-text">
+                            @if($technicians->isEmpty())
+                                No technician is assigned to this barangay yet — defaults to you.
+                            @else
+                                Defaults to the technician assigned to this farm's barangay.
+                            @endif
+                        </div>
+                    @else
+                        <input type="text" class="form-control" value="{{ Auth::user()->username }}" disabled>
+                    @endif
                 </div>
 
                 <div class="col-12">

@@ -8,6 +8,7 @@ use App\Models\NpkColorChart;
 use App\Models\PhColorChart;
 use App\Models\SoilSample;
 use App\Models\SoilTestAssignment;
+use App\Models\User;
 use App\Services\ColorScienceService;
 use App\Services\FertilizerService;
 use Illuminate\Http\Request;
@@ -26,7 +27,12 @@ class AnalysisController extends Controller
     public function createSample(Farm $farm)
     {
         $this->authoriseFarm($farm);
-        return view('samples.create', compact('farm'));
+
+        $technicians = Auth::user()->isAdmin()
+            ? $farm->locationBarangay->assignedTechnicians()->orderBy('username')->get()
+            : collect();
+
+        return view('samples.create', compact('farm', 'technicians'));
     }
 
     public function storeSample(Request $request, Farm $farm)
@@ -41,9 +47,24 @@ class AnalysisController extends Controller
             'sample_date' => 'required|date|before_or_equal:today',
             'date_tested' => 'required|date|before_or_equal:today|after_or_equal:sample_date',
             'notes' => 'nullable|string|max:2000',
+            'analyst_id' => 'nullable|exists:users,id',
         ]);
 
-        $sample = Auth::user()->soilSamples()->create([
+        // An admin creating a sample on a technician's behalf should credit (and
+        // later assign mobile probe tasks to) that technician — not the admin
+        // who happened to click through this form. Only an admin may override;
+        // a technician's own samples always stay attributed to themselves, and
+        // the candidate must actually be the barangay's technician (or the
+        // acting admin) to prevent assigning samples to an arbitrary user id.
+        $analyst = Auth::user();
+        if ($analyst->isAdmin() && $request->filled('analyst_id')) {
+            $candidate = User::find($request->analyst_id);
+            if ($candidate && ($candidate->id === $analyst->id || $farm->locationBarangay->hasTechnician($candidate))) {
+                $analyst = $candidate;
+            }
+        }
+
+        $sample = $analyst->soilSamples()->create([
             'farm_id' => $farm->id,
             'farmer_id' => $farm->farmer_id,
             'analysis_type' => 'pending',
@@ -188,7 +209,12 @@ class AnalysisController extends Controller
         if (!SoilTestAssignment::where('soil_sample_id', $sample->id)->exists()) {
             SoilTestAssignment::create([
                 'farm_id' => $sample->farm_id,
-                'assigned_technician_id' => Auth::id(),
+                // The technician who will actually do the fieldwork is the
+                // sample's analyst (its owning user) — which may differ from
+                // whoever is clicking "Schedule" right now (e.g. an admin
+                // scheduling on a technician's behalf via the Analyst field
+                // on Create Sample).
+                'assigned_technician_id' => $sample->user_id,
                 'scheduled_date' => now()->toDateString(),
                 'status' => 'pending',
                 'assigned_by' => Auth::id(),
