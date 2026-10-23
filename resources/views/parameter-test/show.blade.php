@@ -143,6 +143,10 @@ $paramDone  = [
                 <button id="startCameraBtn" class="btn btn-outline-secondary btn-sm mt-2" onclick="startCamera()">
                     <i class="fas fa-video me-1"></i> Start Camera
                 </button>
+                <button class="btn btn-outline-primary btn-sm mt-2 d-none js-switch-camera" onclick="ColorimeterCamera.choose()">
+                    <i class="fas fa-exchange-alt"></i> Switch Camera
+                </button>
+                <div class="small text-muted mt-1 js-camera-label"></div>
             </div>
 
             {{-- ── Right: Capture table ──────────────────────────── --}}
@@ -279,6 +283,7 @@ $paramDone  = [
 @endsection
 
 @section('scripts')
+<script src="{{ asset('js/colorimeter-camera.js') }}?v={{ filemtime(public_path('js/colorimeter-camera.js')) }}"></script>
 <script>
 const SAMPLE_ID  = {{ $sample->id }};
 const PARAMETER  = '{{ $parameter }}';
@@ -290,16 +295,24 @@ let   captureCount = {{ $captureCount }};
 
 // ── Camera ────────────────────────────────────────────────────────
 function startCamera() {
-    navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: false })
-        .then(stream => {
+    ColorimeterCamera.start({
+        width: 320,
+        height: 240,
+        onStream(stream, info) {
             videoStream = stream;
             document.getElementById('webcam').srcObject = stream;
             const btn = document.getElementById('startCameraBtn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-check-circle"></i> Camera Active';
             btn.classList.replace('btn-outline-secondary', 'btn-success');
-        })
-        .catch(err => alert('Camera error: ' + err.message));
+            document.querySelectorAll('.js-switch-camera').forEach(b => b.classList.remove('d-none'));
+            document.querySelectorAll('.js-camera-label').forEach(el => {
+                el.innerHTML = info.external
+                    ? '<i class="fas fa-plug text-success me-1"></i>Colorimeter camera: ' + (info.label || 'USB camera')
+                    : '<i class="fas fa-exclamation-triangle text-warning me-1"></i>Using built-in camera — connect the colorimeter box for accurate readings';
+            });
+        },
+    });
 }
 
 // ── Countdown timer ───────────────────────────────────────────────

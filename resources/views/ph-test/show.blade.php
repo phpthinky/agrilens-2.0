@@ -145,6 +145,10 @@ $current     = $statusOrder[$phTest->status] ?? 0;
                 <button id="stopCameraBtn" class="btn btn-outline-danger btn-sm mt-2 d-none" onclick="stopCamera()">
                     <i class="fas fa-stop-circle"></i> Stop Camera
                 </button>
+                <button class="btn btn-outline-primary btn-sm mt-2 d-none js-switch-camera" onclick="ColorimeterCamera.choose()">
+                    <i class="fas fa-exchange-alt"></i> Switch Camera
+                </button>
+                <div class="small text-muted mt-1 js-camera-label"></div>
             </div>
 
             <div class="col-md-7">
@@ -389,6 +393,10 @@ $timerSec = str_pad($timer % 60, 2, '0', STR_PAD_LEFT);
                 <button id="stopCameraBtn" class="btn btn-outline-danger btn-sm mt-2 d-none" onclick="stopCamera()">
                     <i class="fas fa-stop-circle"></i> Stop Camera
                 </button>
+                <button class="btn btn-outline-primary btn-sm mt-2 d-none js-switch-camera" onclick="ColorimeterCamera.choose()">
+                    <i class="fas fa-exchange-alt"></i> Switch Camera
+                </button>
+                <div class="small text-muted mt-1 js-camera-label"></div>
             </div>
 
             <div class="col-md-7">
@@ -747,6 +755,7 @@ $avgConfPct = !empty($confPcts) ? (int) round(array_sum($confPcts) / count($conf
 @endsection
 
 @section('scripts')
+<script src="{{ asset('js/colorimeter-camera.js') }}?v={{ filemtime(public_path('js/colorimeter-camera.js')) }}"></script>
 <script>
 const sampleId  = {{ $sample->id }};
 const csrf      = document.querySelector('meta[name="csrf-token"]').content;
@@ -755,8 +764,10 @@ let   timerInterval = null;
 
 // ── Camera ────────────────────────────────────────────────────────
 function startCamera() {
-    navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: false })
-        .then(stream => {
+    ColorimeterCamera.start({
+        width: 320,
+        height: 240,
+        onStream(stream, info) {
             videoStream = stream;
             document.querySelectorAll('video#webcam').forEach(v => v.srcObject = stream);
             document.querySelectorAll('#startCameraBtn').forEach(btn => {
@@ -764,14 +775,23 @@ function startCamera() {
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> Camera Active';
                 btn.classList.replace('btn-outline-secondary', 'btn-success');
             });
-            document.querySelectorAll('#stopCameraBtn').forEach(btn => btn.classList.remove('d-none'));
-        })
-        .catch(err => alert('Camera error: ' + err.message));
+            document.querySelectorAll('#stopCameraBtn, .js-switch-camera').forEach(btn => btn.classList.remove('d-none'));
+            showCameraLabel(info);
+        },
+    });
+}
+
+function showCameraLabel(info) {
+    document.querySelectorAll('.js-camera-label').forEach(el => {
+        el.innerHTML = !info ? '' : info.external
+            ? '<i class="fas fa-plug text-success me-1"></i>Colorimeter camera: ' + (info.label || 'USB camera')
+            : '<i class="fas fa-exclamation-triangle text-warning me-1"></i>Using built-in camera — connect the colorimeter box for accurate readings';
+    });
 }
 
 function stopCamera() {
     if (videoStream) {
-        videoStream.getTracks().forEach(t => t.stop());
+        ColorimeterCamera.stop();
         videoStream = null;
         document.querySelectorAll('video#webcam').forEach(v => v.srcObject = null);
     }
@@ -780,7 +800,8 @@ function stopCamera() {
         btn.innerHTML = '<i class="fas fa-video"></i> Start Camera';
         btn.classList.replace('btn-success', 'btn-outline-secondary');
     });
-    document.querySelectorAll('#stopCameraBtn').forEach(btn => btn.classList.add('d-none'));
+    document.querySelectorAll('#stopCameraBtn, .js-switch-camera').forEach(btn => btn.classList.add('d-none'));
+    showCameraLabel(null);
 }
 
 // ── Countdown timer ───────────────────────────────────────────────
