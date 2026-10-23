@@ -302,6 +302,11 @@
                         <i class="fa fa-seedling me-2"></i> Crops
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('admin.fertilizer-calibration.*') ? 'active' : '' }}" href="{{ route('admin.fertilizer-calibration.index') }}">
+                        <i class="fa fa-sliders-h me-2"></i> Fertilizer Calibration
+                    </a>
+                </li>
                 @endif
 
                 <li class="nav-item">

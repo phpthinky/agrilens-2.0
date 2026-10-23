@@ -28,6 +28,11 @@ class Crop extends Model
         return $this->hasMany(CropFertilizerSchedule::class);
     }
 
+    public function fertilizerScheduleStages()
+    {
+        return $this->hasMany(FertilizerScheduleStage::class)->orderBy('stage');
+    }
+
     // ── Scopes ────────────────────────────────────────────────────────────────
 
     public function scopeActive($query)

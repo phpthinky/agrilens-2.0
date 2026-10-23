@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\TechnicianAssignmentController;
 use App\Http\Controllers\Admin\NpkColorChartController;
 use App\Http\Controllers\Admin\PhColorChartController;
 use App\Http\Controllers\Admin\CropFertilizerScheduleController;
+use App\Http\Controllers\Admin\FertilizerCalibrationController;
 use App\Http\Controllers\BarangayController;
 use App\Http\Controllers\FarmerController;
 use App\Http\Controllers\FarmController;
@@ -184,5 +185,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/crop-fertilizer-schedules',             [CropFertilizerScheduleController::class, 'index'])->name('crop-fertilizer-schedules.index');
         Route::get('/crop-fertilizer-schedules/{crop}/edit',[CropFertilizerScheduleController::class, 'edit'])->name('crop-fertilizer-schedules.edit');
         Route::put('/crop-fertilizer-schedules/{crop}',     [CropFertilizerScheduleController::class, 'update'])->name('crop-fertilizer-schedules.update');
+
+        // Fertilizer schedule calibration — drives the live recommendation engine
+        // (FertilizerScheduleService), unlike the legacy bags-based schedule above.
+        Route::get('/fertilizer-calibration',              [FertilizerCalibrationController::class, 'index'])->name('fertilizer-calibration.index');
+        Route::get('/fertilizer-calibration/{crop}/edit',   [FertilizerCalibrationController::class, 'edit'])->name('fertilizer-calibration.edit');
+        Route::put('/fertilizer-calibration/{crop}',        [FertilizerCalibrationController::class, 'update'])->name('fertilizer-calibration.update');
+        Route::delete('/fertilizer-calibration/{crop}',     [FertilizerCalibrationController::class, 'destroy'])->name('fertilizer-calibration.destroy');
     });
 });

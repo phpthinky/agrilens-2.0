@@ -3,116 +3,10 @@
 namespace App\Services;
 
 use App\Models\Crop;
+use Illuminate\Database\Eloquent\Collection;
 
 class FertilizerScheduleService
 {
-    // ────────────────────────────────────────────────────────────────────────────
-    // Crops that have a defined fertilizer application timing schedule.
-    // Keys MUST match crop names in the DB (case-insensitive compare is done
-    // in getCropSchedule()).  Only these crops appear in the modal selector.
-    // ────────────────────────────────────────────────────────────────────────────
-    public const SUPPORTED_CROPS = [
-        'RICE',
-        'CORN',
-        'TOMATO',
-        'EGGPLANT',
-        'CHILI',
-        'BITTER GOURD',
-        'BEANS',
-    ];
-
-    // ────────────────────────────────────────────────────────────────────────────
-    // Per-crop application timing labels  (3 stages each)
-    // ────────────────────────────────────────────────────────────────────────────
-    protected const TIMING = [
-        'RICE' => [
-            1 => '1st Application – 0–2 DAT (Basal, Before/At Planting)',
-            2 => '2nd Application – 21–30 DAT (Topdress, Tillering)',
-            3 => '3rd Application – 50–60 DAT (Topdress, Panicle Initiation)',
-        ],
-        'CORN' => [
-            1 => '1st Application – 0–2 DAP (Basal, At Planting)',
-            2 => '2nd Application – 25–30 DAP (Topdress, Knee-high Stage)',
-            3 => '3rd Application – 45–55 DAP (Topdress, Tasseling Stage)',
-        ],
-        'TOMATO' => [
-            1 => '1st Application – 0 DAT (Basal, At Transplanting)',
-            2 => '2nd Application – 21–30 DAT (Topdress, Before Flowering)',
-            3 => '3rd Application – 45–60 DAT (Topdress, Fruit Setting)',
-        ],
-        'EGGPLANT' => [
-            1 => '1st Application – 0 DAT (Basal, At Transplanting)',
-            2 => '2nd Application – 30 DAT (Topdress, Vegetative Growth)',
-            3 => '3rd Application – 55–60 DAT (Topdress, First Harvest/Peak)',
-        ],
-        'CHILI' => [
-            1 => '1st Application – 0 DAT (Basal, At Transplanting)',
-            2 => '2nd Application – 30 DAT (Topdress, Flower Initiation)',
-            3 => '3rd Application – 60 DAT (Topdress, Fruiting Stage)',
-        ],
-        'BITTER GOURD' => [
-            1 => '1st Application – 0 DAP (Basal, At Planting)',
-            2 => '2nd Application – 28–30 DAP (Topdress, Vining Stage)',
-            3 => '3rd Application – 50–60 DAP (Topdress, Peak Flowering)',
-        ],
-        'BEANS' => [
-            1 => '1st Application – 0 DAP (Basal, At Planting)',
-            2 => '2nd Application – 20–25 DAP (Topdress, Pre-flowering)',
-            3 => '3rd Application – (Rarely needed)',
-        ],
-    ];
-
-    // ────────────────────────────────────────────────────────────────────────────
-    // N/P/K split ratios per crop per stage.
-    // Each entry is [n_fraction, p_fraction, k_fraction].
-    //   • P is always applied fully in the 1st application (basal).
-    //   • Fractions must sum to 1.0 for each nutrient across all 3 stages.
-    // ────────────────────────────────────────────────────────────────────────────
-    protected const SPLITS = [
-        // Rice:  N 1/2 | 1/4 | 1/4 ;  P full|0|0 ;  K 1/2|0|1/2
-        'RICE' => [
-            1 => ['n' => 0.50, 'p' => 1.00, 'k' => 0.50],
-            2 => ['n' => 0.25, 'p' => 0.00, 'k' => 0.00],
-            3 => ['n' => 0.25, 'p' => 0.00, 'k' => 0.50],
-        ],
-        // Corn:  N 1/3 | 1/3 | 1/3 ;  P full|0|0 ;  K 1/2|0|1/2
-        'CORN' => [
-            1 => ['n' => 0.333, 'p' => 1.00, 'k' => 0.50],
-            2 => ['n' => 0.333, 'p' => 0.00, 'k' => 0.00],
-            3 => ['n' => 0.334, 'p' => 0.00, 'k' => 0.50],
-        ],
-        // Tomato: N 1/4 | 1/2 | 1/4 ;  P full|0|0 ;  K 1/4|1/4|1/2
-        'TOMATO' => [
-            1 => ['n' => 0.25, 'p' => 1.00, 'k' => 0.25],
-            2 => ['n' => 0.50, 'p' => 0.00, 'k' => 0.25],
-            3 => ['n' => 0.25, 'p' => 0.00, 'k' => 0.50],
-        ],
-        // Eggplant: N 1/2 | 1/4 | 1/4 ;  P full|0|0 ;  K 1/2|0|1/2
-        'EGGPLANT' => [
-            1 => ['n' => 0.50, 'p' => 1.00, 'k' => 0.50],
-            2 => ['n' => 0.25, 'p' => 0.00, 'k' => 0.00],
-            3 => ['n' => 0.25, 'p' => 0.00, 'k' => 0.50],
-        ],
-        // Chili: N 1/4 | 1/2 | 1/4 ;  P full|0|0 ;  K 1/2|0|1/2
-        'CHILI' => [
-            1 => ['n' => 0.25, 'p' => 1.00, 'k' => 0.50],
-            2 => ['n' => 0.50, 'p' => 0.00, 'k' => 0.00],
-            3 => ['n' => 0.25, 'p' => 0.00, 'k' => 0.50],
-        ],
-        // Bitter Gourd: N 1/3 | 1/3 | 1/3 ;  P full|0|0 ;  K 1/3|1/3|1/3
-        'BITTER GOURD' => [
-            1 => ['n' => 0.333, 'p' => 1.00, 'k' => 0.333],
-            2 => ['n' => 0.333, 'p' => 0.00, 'k' => 0.333],
-            3 => ['n' => 0.334, 'p' => 0.00, 'k' => 0.334],
-        ],
-        // Beans: N 1/2 | 1/2 | 0 ;  P full|0|0 ;  K full|0|0  (3rd rarely needed)
-        'BEANS' => [
-            1 => ['n' => 0.50, 'p' => 1.00, 'k' => 1.00],
-            2 => ['n' => 0.50, 'p' => 0.00, 'k' => 0.00],
-            3 => ['n' => 0.00, 'p' => 0.00, 'k' => 0.00],
-        ],
-    ];
-
     // ────────────────────────────────────────────────────────────────────────────
     // Fertilizer grades used in every schedule
     // ────────────────────────────────────────────────────────────────────────────
@@ -129,36 +23,56 @@ class FertilizerScheduleService
     ];
 
     // ────────────────────────────────────────────────────────────────────────────
-    // Map a crop name (from DB) to its uppercase schedule key, or null if the
-    // crop is not in the supported list.
+    // Fallback timing/split used for a crop with no admin-calibrated schedule
+    // (or missing individual stages) — mirrors the old RICE defaults so an
+    // uncalibrated crop still produces a sane schedule.
     // ────────────────────────────────────────────────────────────────────────────
+    private const DEFAULT_STAGES = [
+        1 => ['label' => '1st Application – Basal (At Planting)',   'n' => 0.50, 'p' => 1.00, 'k' => 0.50],
+        2 => ['label' => '2nd Application – Topdress (Tillering)',  'n' => 0.25, 'p' => 0.00, 'k' => 0.00],
+        3 => ['label' => '3rd Application – Topdress (Reproductive)', 'n' => 0.25, 'p' => 0.00, 'k' => 0.50],
+    ];
+
+    /** True once an admin has calibrated at least one stage for this crop. */
+    public function hasCalibration(Crop $crop): bool
+    {
+        return $crop->fertilizerScheduleStages()->exists();
+    }
+
+    /**
+     * Kept for backward compatibility with callers that treat this as a
+     * null-check gate ("does this crop have a defined schedule?"). Returns
+     * the crop's own id (as a string) once calibrated, or null otherwise —
+     * there's no more shared string key across aliased crop names, each
+     * crop is calibrated independently now.
+     */
     public function resolveKey(string $cropName): ?string
     {
-        $upper = strtoupper(trim($cropName));
+        $crop = Crop::whereRaw('LOWER(name) = ?', [strtolower(trim($cropName))])->first();
 
-        // Alias map for crop names that differ between DB and schedule keys
-        $aliases = [
-            'TOMATOES'      => 'TOMATO',
-            'CORN(WHITE)'   => 'CORN',
-            'CORN(YELLOW)'  => 'CORN',
-            'CORN (WHITE)'  => 'CORN',
-            'CORN (YELLOW)' => 'CORN',
-            'RICE'          => 'RICE',
-            'AMPALAYA/UPO'  => 'BITTER GOURD',   // ampalaya = bitter gourd
-            'AMPALAYA'      => 'BITTER GOURD',
-            'BITTER GOURD'  => 'BITTER GOURD',
-            'EGGPLANT'      => 'EGGPLANT',
-            'CHILI'         => 'CHILI',
-            'BELL PEPPER (CHILI)' => 'CHILI',
-            'GREEN (SINIGANG CHILI)' => 'CHILI',
-            'BEANS'         => 'BEANS',
-            'STRING BEANS'  => 'BEANS',
-            'BATAO'         => 'BEANS',
-            'PEAS'          => 'BEANS',
-            'TOMATO'        => 'TOMATO',
-        ];
+        return ($crop && $this->hasCalibration($crop)) ? (string) $crop->id : null;
+    }
 
-        return $aliases[$upper] ?? (in_array($upper, self::SUPPORTED_CROPS, true) ? $upper : null);
+    private function stagesFor(Crop $crop): array
+    {
+        $rows = $crop->fertilizerScheduleStages;
+
+        if ($rows->isEmpty()) {
+            return self::DEFAULT_STAGES;
+        }
+
+        $stages = [];
+        foreach ($rows as $row) {
+            $stages[$row->stage] = [
+                'label' => $row->label,
+                'n' => (float) $row->n_fraction,
+                'p' => (float) $row->p_fraction,
+                'k' => (float) $row->k_fraction,
+            ];
+        }
+
+        // Fill in any stage the admin hasn't calibrated yet with the fallback.
+        return $stages + self::DEFAULT_STAGES;
     }
 
     // ────────────────────────────────────────────────────────────────────────────
@@ -182,8 +96,8 @@ class FertilizerScheduleService
 
     // ────────────────────────────────────────────────────────────────────────────
     // Core calculation:
-    //   Given NPK targets (kg/ha of nutrient) and a schedule key, return the
-    //   per-stage fertilizer amounts (kg/ha of product).
+    //   Given NPK targets (kg/ha of nutrient) and the crop's calibrated
+    //   stages, return the per-stage fertilizer amounts (kg/ha of product).
     //
     //   Fertilizer logic:
     //     • DAP (18-46-0)  → supplies all of P  →  kgDAP = targetP / 0.46
@@ -191,16 +105,15 @@ class FertilizerScheduleService
     //     • Remaining N supplied by UREA (46-0-0)  →  kgUrea = remainingN / 0.46
     //     • MOP (0-0-60)   → supplies all of K  →  kgMOP = targetK / 0.60
     //
-    //   Splits are applied per stage using the fraction tables above.
+    //   Per-stage fractions come from the crop's calibrated schedule.
     // ────────────────────────────────────────────────────────────────────────────
     public function calculateSchedule(
         float  $targetN,
         float  $targetP,
         float  $targetK,
-        string $scheduleKey,
+        Crop   $crop,
         string $basalFertKey = 'urea'
     ): array {
-        $key        = strtoupper($scheduleKey);
         $basalFert  = self::BASAL_FERTILIZERS[$basalFertKey] ?? self::BASAL_FERTILIZERS['urea'];
         $basalKey   = array_key_exists($basalFertKey, self::BASAL_FERTILIZERS) ? $basalFertKey : 'urea';
 
@@ -211,13 +124,12 @@ class FertilizerScheduleService
         $totalUrea  = $remainingN > 0 ? $remainingN / 0.46 : 0;
         $totalMop   = $targetK  > 0 ? $targetK  / 0.60 : 0;
 
-        $splits  = self::SPLITS[$key]  ?? self::SPLITS['RICE'];
-        $timings = self::TIMING[$key]  ?? self::TIMING['RICE'];
+        $stages = $this->stagesFor($crop);
 
         $result = [];
 
         foreach ([1, 2, 3] as $stage) {
-            $s = $splits[$stage];
+            $s = $stages[$stage];
 
             if ($stage === 1 && $basalKey !== 'urea') {
                 // ── Basal stage: use selected fertilizer for N ──────────────────
@@ -246,7 +158,7 @@ class FertilizerScheduleService
             }
 
             $result[$stage] = [
-                'stage'      => $timings[$stage],
+                'stage'      => $s['label'],
                 'basal_fert' => $basal,
                 'urea'       => $urea,
                 'dap'        => $dap,
@@ -282,7 +194,7 @@ class FertilizerScheduleService
 
     // ────────────────────────────────────────────────────────────────────────────
     // Convenience: resolve crop → targets → schedule in one call.
-    // Returns null if the crop has no schedule defined.
+    // Returns null if the crop has no calibrated schedule.
     // ────────────────────────────────────────────────────────────────────────────
     public function scheduleForCrop(
         Crop   $crop,
@@ -291,8 +203,7 @@ class FertilizerScheduleService
         string $kStatus,
         string $basalFertKey = 'urea'
     ): ?array {
-        $key = $this->resolveKey($crop->name);
-        if ($key === null) {
+        if (!$this->hasCalibration($crop)) {
             return null;
         }
 
@@ -302,26 +213,25 @@ class FertilizerScheduleService
             $targets['n'],
             $targets['p'],
             $targets['k'],
-            $key,
+            $crop,
             $basalFertKey
         );
 
         $schedule['crop_name']    = $crop->name;
-        $schedule['schedule_key'] = $key;
+        $schedule['schedule_key'] = (string) $crop->id;
 
         return $schedule;
     }
 
     // ────────────────────────────────────────────────────────────────────────────
-    // Return only the active Crop models that have a supported schedule,
-    // useful for populating the modal dropdown.
+    // Return only the active Crop models that have an admin-calibrated
+    // schedule, useful for populating the modal dropdown.
     // ────────────────────────────────────────────────────────────────────────────
-    public function supportedCrops(): \Illuminate\Database\Eloquent\Collection
+    public function supportedCrops(): Collection
     {
         return Crop::active()
+            ->whereHas('fertilizerScheduleStages')
             ->orderBy('name')
-            ->get()
-            ->filter(fn(Crop $c) => $this->resolveKey($c->name) !== null)
-            ->values();
+            ->get();
     }
 }
