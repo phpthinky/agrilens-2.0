@@ -144,6 +144,11 @@
 
     // ── Picker modal ────────────────────────────────────────────────
 
+    /**
+     * The notice deliberately avoids Bootstrap's `.alert` class: the app
+     * layout closes (removes) every `.alert` on the page 5s after load,
+     * which would delete it out from under a later re-scan.
+     */
     function buildModal() {
         const el = document.createElement('div');
         el.className = 'modal fade';
@@ -156,7 +161,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="alert alert-warning small mb-3" data-role="notice">
+                        <div class="border border-warning bg-warning-subtle text-warning-emphasis rounded p-3 small mb-3" data-role="notice">
                             <i class="fas fa-plug me-1"></i>
                             ${isMobile
                                 ? '<strong>No USB / OTG camera detected.</strong> Connect the colorimeter box to this phone with an OTG adapter and tap <em>Scan again</em>, or choose the back or front camera below.'
@@ -174,10 +179,10 @@
             </div>`;
         document.body.appendChild(el);
 
-        el.querySelector('[data-role="rescan"]').addEventListener('click', () => {
-            hideModal();
-            start(options);
-        });
+        // Re-scan in place: start() closes the picker only if it finds a
+        // camera to open, otherwise it refreshes the choices. Hiding first
+        // would break the re-show — Bootstrap ignores show() mid-hide.
+        el.querySelector('[data-role="rescan"]').addEventListener('click', () => start(options));
 
         return el;
     }
@@ -210,8 +215,13 @@
             return openFacing('environment').catch(reportError);
         }
 
-        modal = modal || buildModal();
-        modal.querySelector('[data-role="notice"]').hidden = !showNotice;
+        if (!modal || !document.body.contains(modal)) {
+            modal = buildModal();
+        }
+        const notice = modal.querySelector('[data-role="notice"]');
+        if (notice) {
+            notice.hidden = !showNotice;
+        }
 
         const choices = modal.querySelector('[data-role="choices"]');
         choices.innerHTML = '';
@@ -283,12 +293,14 @@
             const external = findExternal(devices);
 
             if (external) {
+                hideModal();
                 await openDevice(external, true);
                 return;
             }
 
             // Desktop with a single camera: nothing to choose between.
             if (!isMobile && devices.length === 1) {
+                hideModal();
                 await openDevice(devices[0]);
                 return;
             }
