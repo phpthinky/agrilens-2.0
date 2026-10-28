@@ -24,6 +24,7 @@ use App\Http\Controllers\HelpController;
 use App\Http\Controllers\CropRequirementsController;
 use App\Http\Controllers\CropController;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\MobileHandoffController;
 use Illuminate\Support\Facades\Route;
 
 // Root: authenticated users go to their dashboard, guests see the public map.
@@ -43,6 +44,11 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->midd
 
 // ── Technician app download (public, so a technician can grab it before logging in) ──
 Route::get('/download-app', [DownloadController::class, 'index'])->name('download-app');
+
+// ── Field app → web result page (signed, single-use; starts the web session itself) ──
+Route::get('/mobile/handoff/{sample}', MobileHandoffController::class)
+    ->middleware('signed')
+    ->name('mobile.handoff');
 
 // ── Public map ──────────────────────────────────────────────────────────────
 Route::get('/map', [PublicMapController::class, 'index'])->name('public.map');

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AssignmentController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ColorimetricController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ScheduleAssignmentController;
 use App\Http\Controllers\Api\SoilAnalysisController;
@@ -36,6 +37,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Free-form analysis creation on an already-registered farm (not tied to a pre-scheduled assignment).
     Route::post('/farms/{farm}/analyses', [SoilAnalysisController::class, 'store'])->name('api.farms.analyses.store');
+
+    // Colorimetric testing: the app uploads USB-webcam photos; color picking and analysis stay server-side.
+    Route::post('/farms/{farm}/colorimetric-samples', [ColorimetricController::class, 'store'])->name('api.colorimetric.store');
+    Route::get('/samples/{sample}/colorimetric', [ColorimetricController::class, 'show'])->name('api.colorimetric.show');
+    Route::post('/samples/{sample}/colorimetric/captures', [ColorimetricController::class, 'capture'])->name('api.colorimetric.capture');
+    Route::delete('/samples/{sample}/colorimetric/{parameter}', [ColorimetricController::class, 'reset'])
+        ->where('parameter', 'ph|nitrogen|phosphorus|potassium')
+        ->name('api.colorimetric.reset');
+    Route::post('/samples/{sample}/result-link', [ColorimetricController::class, 'resultLink'])->name('api.colorimetric.result-link');
 
     // Consolidated pending/completed task list for the mobile homepage.
     Route::get('/tasks', [TaskController::class, 'index'])->name('api.tasks.index');
