@@ -127,14 +127,14 @@ $current     = $statusOrder[$phTest->status] ?? 0;
                 <div style="position:relative;display:inline-block;">
                     <video id="webcam" width="320" height="240" autoplay playsinline
                            style="border:2px solid #0d6efd;border-radius:8px;display:block;"></video>
-                    {{-- Capture-zone crosshair: 70×70 px box matching the JS getImageData crop --}}
-                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-                                width:70px;height:70px;border:2px solid #fff;box-shadow:0 0 0 1px #0d6efd,inset 0 0 0 1px #0d6efd;
-                                pointer-events:none;"></div>
-                    <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+                    {{-- Live guide: dashed band = where the tube stands at the box centre;
+                         filled strip = the pixels ColorimeterSample.pick() averages --}}
+                    <canvas class="js-zone-overlay" width="320" height="240"
+                            style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+                    <div class="js-zone-label" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
                                 background:rgba(0,0,0,.55);color:#fff;font-size:10px;padding:1px 6px;
                                 border-radius:3px;pointer-events:none;white-space:nowrap;">
-                        Place liquid here
+                        Stand the tube in the dashed guide
                     </div>
                 </div>
                 <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
@@ -375,14 +375,14 @@ $timerSec = str_pad($timer % 60, 2, '0', STR_PAD_LEFT);
                 <div style="position:relative;display:inline-block;">
                     <video id="webcam" width="320" height="240" autoplay playsinline
                            style="border:2px solid #388e3c;border-radius:8px;display:block;"></video>
-                    {{-- Capture-zone crosshair: 70×70 px box matching the JS getImageData crop --}}
-                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-                                width:70px;height:70px;border:2px solid #fff;box-shadow:0 0 0 1px #388e3c,inset 0 0 0 1px #388e3c;
-                                pointer-events:none;"></div>
-                    <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+                    {{-- Live guide: dashed band = where the tube stands at the box centre;
+                         filled strip = the pixels ColorimeterSample.pick() averages --}}
+                    <canvas class="js-zone-overlay" width="320" height="240"
+                            style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+                    <div class="js-zone-label" style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
                                 background:rgba(0,0,0,.55);color:#fff;font-size:10px;padding:1px 6px;
                                 border-radius:3px;pointer-events:none;white-space:nowrap;">
-                        Place liquid here
+                        Stand the tube in the dashed guide
                     </div>
                 </div>
                 <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
@@ -756,6 +756,7 @@ $avgConfPct = !empty($confPcts) ? (int) round(array_sum($confPcts) / count($conf
 
 @section('scripts')
 <script src="{{ asset('js/colorimeter-camera.js') }}?v={{ filemtime(public_path('js/colorimeter-camera.js')) }}"></script>
+<script src="{{ asset('js/colorimeter-sample.js') }}?v={{ filemtime(public_path('js/colorimeter-sample.js')) }}"></script>
 <script>
 const sampleId  = {{ $sample->id }};
 const csrf      = document.querySelector('meta[name="csrf-token"]').content;
@@ -777,6 +778,7 @@ function startCamera() {
             });
             document.querySelectorAll('#stopCameraBtn, .js-switch-camera').forEach(btn => btn.classList.remove('d-none'));
             showCameraLabel(info);
+            ColorimeterSample.watchAll();
         },
     });
 }
@@ -839,13 +841,8 @@ function captureStep(step, captureNumber) {
     // Save the full frame as a JPEG snapshot for the report
     const snapshot = canvas.toDataURL('image/jpeg', 0.80);
 
-    const cx   = Math.floor(canvas.width / 2) - 35;
-    const cy   = Math.floor(canvas.height / 2) - 35;
-    const data = ctx.getImageData(cx, cy, 70, 70).data;
-    let r = 0, g = 0, b = 0, n = 0;
-    for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i+1]; b += data[i+2]; n++; }
-    r = Math.round(r/n); g = Math.round(g/n); b = Math.round(b/n);
-    const hex = '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('').toUpperCase();
+    // Middle of the tube, clear of LED reflections (see colorimeter-sample.js)
+    const { r, g, b, hex } = ColorimeterSample.pick(ctx.getImageData(0, 0, canvas.width, canvas.height));
 
     const btn = document.getElementById('capture' + step + '-' + captureNumber);
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…'; }

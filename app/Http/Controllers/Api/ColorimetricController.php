@@ -112,7 +112,7 @@ class ColorimetricController extends Controller
         $bytes = file_get_contents($photo->getRealPath());
 
         try {
-            $color = $this->snapshotColor->sampleCenter($bytes);
+            $color = $this->snapshotColor->sampleTube($bytes);
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
@@ -166,6 +166,7 @@ class ColorimetricController extends Controller
             'capture' => [
                 'parameter'      => $parameter,
                 'color_hex'      => $color['hex'],
+                'zone'           => $color['method'],
                 'computed_value' => $result['computed_value'] ?? null,
             ],
             'status'  => $this->status($sample),
