@@ -155,6 +155,7 @@ $paramDone  = [
                                   {{ in_array($meta['color'], ['success','primary']) ? '' : '' }}">
                         <tr>
                             <th>Capture</th>
+                            <th class="text-center">Photo</th>
                             <th class="text-center">Color</th>
                             <th class="text-center">{{ $meta['label'] }} Reading</th>
                             <th class="text-center">Category</th>
@@ -174,6 +175,17 @@ $paramDone  = [
                         @endphp
                         <tr>
                             <td class="fw-bold">Capture {{ $i }}</td>
+                            <td class="text-center">
+                                @if($rd && !empty($rd->captured_image))
+                                    <img src="{{ asset($rd->captured_image) }}" width="48" height="36"
+                                         style="border-radius:3px;border:1px solid #ccc;object-fit:cover;"
+                                         data-preview="{{ asset($rd->captured_image) }}"
+                                         data-caption="{{ $meta['label'] }} — Capture {{ $i }} · {{ $rd->color_hex }}"
+                                         title="Click to view the whole image">
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
                             <td class="text-center">
                                 @if($rd)
                                     <div style="width:38px;height:20px;background:{{ $rd->color_hex }};

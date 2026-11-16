@@ -173,7 +173,9 @@ $current     = $statusOrder[$phTest->status] ?? 0;
                                 @if($rd && !empty($rd['image']))
                                     <img src="{{ asset($rd['image']) }}" width="48" height="36"
                                          style="border-radius:3px;border:1px solid #ccc;object-fit:cover;"
-                                         title="Capture {{ $i }}">
+                                         data-preview="{{ asset($rd['image']) }}"
+                                         data-caption="pH capture {{ $i }} · {{ $rd['hex'] }}"
+                                         title="Click to view the whole image">
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
@@ -422,7 +424,9 @@ $timerSec = str_pad($timer % 60, 2, '0', STR_PAD_LEFT);
                                 @if($rd && !empty($rd['image']))
                                     <img src="{{ asset($rd['image']) }}" width="48" height="36"
                                          style="border-radius:3px;border:1px solid #ccc;object-fit:cover;"
-                                         title="Capture {{ $i }}">
+                                         data-preview="{{ asset($rd['image']) }}"
+                                         data-caption="pH capture {{ $i }} · {{ $rd['hex'] }}"
+                                         title="Click to view the whole image">
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
