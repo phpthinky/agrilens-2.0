@@ -19,33 +19,6 @@ class NpkColorChartController extends Controller
         return view('admin.npk-color-charts', compact('charts'));
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'nutrient'  => 'required|in:N,P,K',
-            'ppm_value' => 'required|numeric|min:0|max:9999',
-            'hex_value' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-            'category'  => 'required|in:low,medium,high',
-        ]);
-
-        $hex = strtoupper($request->hex_value);
-
-        if (NpkColorChart::where('nutrient', $request->nutrient)->where('hex_value', $hex)->exists()) {
-            return redirect()->route('admin.npk-color-charts')
-                ->with('error', 'That hex color already exists for ' . $request->nutrient . '.');
-        }
-
-        NpkColorChart::create([
-            'nutrient'  => $request->nutrient,
-            'ppm_value' => $request->ppm_value,
-            'hex_value' => $hex,
-            'category'  => $request->category,
-            'active'    => true,
-        ]);
-
-        return redirect()->route('admin.npk-color-charts')
-            ->with('success', 'Color entry added to ' . $request->nutrient . ' chart.');
-    }
 
     public function toggle(NpkColorChart $npkColorChart)
     {

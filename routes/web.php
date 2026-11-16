@@ -9,6 +9,7 @@ use App\Http\Controllers\AiRecommendationController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\TechnicianAssignmentController;
+use App\Http\Controllers\Admin\ColorCalibrationController;
 use App\Http\Controllers\Admin\NpkColorChartController;
 use App\Http\Controllers\Admin\PhColorChartController;
 use App\Http\Controllers\Admin\CropFertilizerScheduleController;
@@ -175,15 +176,17 @@ Route::middleware('auth')->group(function () {
         Route::patch('/users/{user}/assignments/{assignment}/cancel', [TechnicianAssignmentController::class, 'cancel'])->name('users.assignments.cancel');
         Route::delete('/users/{user}/assignments/{assignment}', [TechnicianAssignmentController::class, 'destroy'])->name('users.assignments.destroy');
 
+        // Device color calibration — the only way to add chart colors
+        Route::get('/color-calibration',                    [ColorCalibrationController::class, 'index'])->name('color-calibration');
+        Route::post('/color-calibration',                   [ColorCalibrationController::class, 'store'])->name('color-calibration.store');
+
         // pH Color Chart management
         Route::get('/ph-color-charts',                      [PhColorChartController::class, 'index'])->name('ph-color-charts');
-        Route::post('/ph-color-charts',                     [PhColorChartController::class, 'store'])->name('ph-color-charts.store');
         Route::patch('/ph-color-charts/{phColorChart}',    [PhColorChartController::class, 'toggle'])->name('ph-color-charts.toggle');
         Route::delete('/ph-color-charts/{phColorChart}',   [PhColorChartController::class, 'destroy'])->name('ph-color-charts.destroy');
 
         // NPK Color Chart management
         Route::get('/npk-color-charts',                     [NpkColorChartController::class, 'index'])->name('npk-color-charts');
-        Route::post('/npk-color-charts',                    [NpkColorChartController::class, 'store'])->name('npk-color-charts.store');
         Route::patch('/npk-color-charts/{npkColorChart}',  [NpkColorChartController::class, 'toggle'])->name('npk-color-charts.toggle');
         Route::delete('/npk-color-charts/{npkColorChart}', [NpkColorChartController::class, 'destroy'])->name('npk-color-charts.destroy');
 

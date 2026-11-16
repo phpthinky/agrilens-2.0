@@ -6,7 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class PhColorChart extends Model
 {
-    protected $fillable = ['indicator', 'ph_value', 'hex_value', 'active'];
+    public const INDICATORS = [
+        'CPR' => 'CPR — Step 1',
+        'BCG' => 'BCG — Step 2, acidic',
+        'BTB' => 'BTB — Step 2, near-neutral',
+    ];
+
+    protected $fillable = ['indicator', 'ph_value', 'hex_value', 'source', 'snapshot', 'active'];
 
     protected $casts = [
         'ph_value' => 'float',
