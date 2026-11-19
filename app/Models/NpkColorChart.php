@@ -6,7 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class NpkColorChart extends Model
 {
-    protected $fillable = ['nutrient', 'ppm_value', 'hex_value', 'category', 'active'];
+    public const NAMES = ['N' => 'Nitrogen', 'P' => 'Phosphorus', 'K' => 'Potassium'];
+
+    /**
+     * ppm stored for a calibration capture labelled only LOW / MEDIUM / HIGH:
+     * a value inside each band of FertilizerService::getNutrientStatus()
+     * (N <45 / 45–160 / ≥160, P <15 / 15–30 / ≥30, K <20 / 20–40 / ≥40).
+     */
+    public const DEFAULT_PPM = [
+        'N' => ['low' => 30.0, 'medium' => 100.0, 'high' => 200.0],
+        'P' => ['low' => 8.0,  'medium' => 22.0,  'high' => 40.0],
+        'K' => ['low' => 10.0, 'medium' => 30.0,  'high' => 50.0],
+    ];
+
+    protected $fillable = ['nutrient', 'ppm_value', 'hex_value', 'category', 'source', 'snapshot', 'active'];
 
     protected $casts = [
         'ppm_value' => 'float',

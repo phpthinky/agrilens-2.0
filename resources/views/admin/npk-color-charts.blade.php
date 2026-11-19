@@ -18,10 +18,6 @@
     .nutrient-header-N { border-top: 3px solid #c0642a; }
     .nutrient-header-P { border-top: 3px solid #7b1fa2; }
     .nutrient-header-K { border-top: 3px solid #0277bd; }
-    .uncalibrated-banner {
-        border-left: 4px solid #f59e0b;
-        background: #fffbeb;
-    }
 @endsection
 
 @section('content')
@@ -32,16 +28,6 @@
             Manage the reference hex colors used by CIEDE2000 delta-E matching for Nitrogen, Phosphorus, and Potassium.
             Each entry maps a captured color to a ppm value and LOW / MEDIUM / HIGH category.
         </p>
-    </div>
-</div>
-
-{{-- Calibration warning banner --}}
-<div class="alert uncalibrated-banner d-flex align-items-start gap-2 mb-4">
-    <i class="fa fa-triangle-exclamation text-warning mt-1 fs-5"></i>
-    <div>
-        <strong>Calibration Required</strong> — The reference colors currently in the system are placeholders
-        and have not been measured from the physical BSWM card. All N, P, K readings will be inaccurate
-        until calibrated under the production lighting box. See <code>NITROGEN.md</code> for the procedure.
     </div>
 </div>
 
@@ -67,76 +53,25 @@
 
 <div class="row g-4">
 
-    {{-- ── Add New Entry ────────────────────────────────────────── --}}
+    {{-- ── Add entries: device calibration ─────────────────────── --}}
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-header bg-success text-white">
-                <i class="fa fa-plus me-1"></i> Add Color Entry
+                <i class="fa fa-eye-dropper me-1"></i> Add Colors
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.npk-color-charts.store') }}">
-                    @csrf
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Nutrient</label>
-                        <select class="form-select" name="nutrient" id="nutrientSelect" required
-                                onchange="updateCategoryHint()">
-                            <option value="">— select —</option>
-                            @foreach(['N' => 'Nitrogen (N)', 'P' => 'Phosphorus (P)', 'K' => 'Potassium (K)'] as $val => $label)
-                            <option value="{{ $val }}" {{ old('nutrient') === $val ? 'selected' : '' }}>
-                                {{ $label }}
-                            </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Category</label>
-                        <select class="form-select" name="category" id="categorySelect" required
-                                onchange="updateCategoryHint()">
-                            <option value="">— select —</option>
-                            <option value="low"    {{ old('category') === 'low'    ? 'selected' : '' }}>
-                                LOW
-                            </option>
-                            <option value="medium" {{ old('category') === 'medium' ? 'selected' : '' }}>
-                                MEDIUM
-                            </option>
-                            <option value="high"   {{ old('category') === 'high'   ? 'selected' : '' }}>
-                                HIGH
-                            </option>
-                        </select>
-                        <div id="categoryHint" class="form-text mt-1"></div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">ppm Value</label>
-                        <input type="number" class="form-control" name="ppm_value"
-                               value="{{ old('ppm_value') }}" min="0" max="9999" step="0.1"
-                               placeholder="e.g. 45.0" required>
-                        <div class="form-text">
-                            N: LOW 15–45 · MEDIUM 60–150 · HIGH 160–240<br>
-                            P &amp; K: ranges to be confirmed from BSWM card.
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Hex Color Value</label>
-                        <div class="input-group">
-                            <input type="color" class="form-control form-control-color" id="colorPicker"
-                                   value="{{ old('hex_value', '#C0642A') }}"
-                                   oninput="document.getElementById('hexInput').value = this.value.toUpperCase()">
-                            <input type="text" class="form-control font-monospace" id="hexInput"
-                                   name="hex_value" value="{{ old('hex_value', '#C0642A') }}"
-                                   placeholder="#RRGGBB" pattern="^#[0-9A-Fa-f]{6}$"
-                                   oninput="syncPicker(this.value)" required>
-                        </div>
-                        <div class="form-text">Measured from physical BSWM card under calibrated lighting.</div>
-                    </div>
-
-                    <button type="submit" class="btn btn-success w-100">
-                        <i class="fa fa-plus me-1"></i> Add Entry
-                    </button>
-                </form>
+                <p class="small text-muted">
+                    New reference colors are captured with the colorimeter box: put a reference solution in the box,
+                    capture it, and label it with its LOW / MEDIUM / HIGH status.
+                </p>
+                <a href="{{ route('admin.color-calibration') }}" class="btn btn-success w-100">
+                    <i class="fa fa-video me-1"></i> Open Color Calibration
+                </a>
+                <p class="small text-muted mt-3 mb-0">
+                    <span class="badge bg-secondary">BSWM card</span> entries are the defaults read from the printed kit card;
+                    <span class="badge bg-success">Device</span> entries were captured with the box camera.
+                    The charts here are the only color source — a chart with no active entries stops that test.
+                </p>
             </div>
         </div>
     </div>
@@ -175,6 +110,7 @@
                                         <th>Hex</th>
                                         <th>ppm</th>
                                         <th>Category</th>
+                                        <th>Source</th>
                                         <th class="text-center">Active</th>
                                         <th class="text-end">Actions</th>
                                     </tr>
@@ -192,6 +128,7 @@
                                                 {{ $entry->category }}
                                             </span>
                                         </td>
+                                        <td>@if($entry->source === 'device')<span class="badge bg-success">Device</span>@if($entry->snapshot) <img src="{{ asset($entry->snapshot) }}" width="40" height="30" class="ms-1 align-middle" style="border-radius:3px;border:1px solid #ccc;object-fit:cover;" data-preview="{{ asset($entry->snapshot) }}" data-caption="{{ $entry->nutrient }} {{ strtoupper($entry->category) }} {{ number_format($entry->ppm_value, 1) }} ppm · {{ $entry->hex_value }}" title="Click to view the whole image">@endif @else<span class="badge bg-secondary">BSWM card</span>@endif</td>
                                         <td class="text-center">
                                             @if($entry->active)
                                                 <span class="badge bg-success">Active</span>
@@ -233,13 +170,13 @@
                         {{-- Category legend for this nutrient --}}
                         <div class="p-3 border-top d-flex gap-3 flex-wrap small text-muted">
                             <span><span class="badge badge-low text-white">LOW</span>
-                                @if($nut === 'N') 15–45 ppm @else to be calibrated @endif
+                                {{ ['N' => '< 45 ppm', 'P' => '< 15 ppm', 'K' => '< 20 ppm'][$nut] }}
                             </span>
                             <span><span class="badge badge-medium text-white">MEDIUM</span>
-                                @if($nut === 'N') 60–150 ppm @else to be calibrated @endif
+                                {{ ['N' => '45–160 ppm', 'P' => '15–30 ppm', 'K' => '20–40 ppm'][$nut] }}
                             </span>
                             <span><span class="badge badge-high text-white">HIGH</span>
-                                @if($nut === 'N') 160–240 ppm @else to be calibrated @endif
+                                {{ ['N' => '≥ 160 ppm', 'P' => '≥ 30 ppm', 'K' => '≥ 40 ppm'][$nut] }}
                             </span>
                         </div>
                     </div>
@@ -295,12 +232,6 @@
 
 @section('scripts')
 <script>
-function syncPicker(hexVal) {
-    if (/^#[0-9A-Fa-f]{6}$/.test(hexVal)) {
-        document.getElementById('colorPicker').value = hexVal;
-    }
-}
-
 function openDeleteModal(id, hex, nutrient, ppm, category) {
     document.getElementById('deleteForm').action = `/admin/npk-color-charts/${id}`;
     document.getElementById('modal-swatch').style.background = hex;
@@ -309,21 +240,5 @@ function openDeleteModal(id, hex, nutrient, ppm, category) {
     new bootstrap.Modal(document.getElementById('deleteModal')).show();
 }
 
-const categoryHints = {
-    N: {
-        low:    'N LOW: orange → dark brown (15–45 ppm)',
-        medium: 'N MEDIUM: green → teal green (60–150 ppm)',
-        high:   'N HIGH: blue-green → teal blue (160–240 ppm)',
-    },
-    P: { low: 'P LOW: ranges to be confirmed', medium: 'P MEDIUM: ranges to be confirmed', high: 'P HIGH: ranges to be confirmed' },
-    K: { low: 'K LOW: ranges to be confirmed', medium: 'K MEDIUM: ranges to be confirmed', high: 'K HIGH: ranges to be confirmed' },
-};
-
-function updateCategoryHint() {
-    const nut = document.getElementById('nutrientSelect').value;
-    const cat = document.getElementById('categorySelect').value;
-    const hint = document.getElementById('categoryHint');
-    hint.textContent = (nut && cat && categoryHints[nut]) ? categoryHints[nut][cat] : '';
-}
 </script>
 @endsection

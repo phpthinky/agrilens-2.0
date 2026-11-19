@@ -59,7 +59,7 @@
                     <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                         <div>
                             <a href="{{ route('samples.show', $sample) }}">{{ $sample->sample_name }}</a>
-                            <span class="badge bg-secondary ms-1">{{ ucfirst($sample->analysis_type ?? 'colorimetric') }}</span>
+                            <span class="badge bg-secondary ms-1">{{ $sample->analysisTypeLabel() }}</span>
                         </div>
                         <div class="text-end">
                             @if(!is_null($sample->fertility_score))

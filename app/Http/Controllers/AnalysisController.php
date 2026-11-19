@@ -104,18 +104,17 @@ class AnalysisController extends Controller
     {
         $this->authoriseSample($sample);
 
-        // Same "DB chart if calibrated, else hardcoded reference" fallback that
-        // ColorScienceService itself uses when resolving a captured/selected color —
-        // the swatches shown here must match what resolution will actually use.
+        // The same database charts ColorScienceService resolves a selected color
+        // against — there is no built-in fallback, so an empty chart shows no swatches.
         $charts = [
             'ph' => [
-                'CPR' => PhColorChart::chartForIndicator('CPR') ?: ColorScienceService::CPR_COLOR_CHART,
-                'BCG' => PhColorChart::chartForIndicator('BCG') ?: ColorScienceService::BCG_COLOR_CHART,
-                'BTB' => PhColorChart::chartForIndicator('BTB') ?: ColorScienceService::BTB_COLOR_CHART,
+                'CPR' => PhColorChart::chartForIndicator('CPR'),
+                'BCG' => PhColorChart::chartForIndicator('BCG'),
+                'BTB' => PhColorChart::chartForIndicator('BTB'),
             ],
-            'nitrogen' => NpkColorChart::chartForNutrient('N') ?: ColorScienceService::NITROGEN_COLOR_CHART,
-            'phosphorus' => NpkColorChart::chartForNutrient('P') ?: ColorScienceService::PHOSPHORUS_COLOR_CHART,
-            'potassium' => NpkColorChart::chartForNutrient('K') ?: ColorScienceService::POTASSIUM_COLOR_CHART,
+            'nitrogen' => NpkColorChart::chartForNutrient('N'),
+            'phosphorus' => NpkColorChart::chartForNutrient('P'),
+            'potassium' => NpkColorChart::chartForNutrient('K'),
         ];
 
         return view('analyses.manual', compact('sample', 'charts'));

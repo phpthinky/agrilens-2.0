@@ -496,7 +496,7 @@
                             <li>Click <strong>Start Camera</strong> and allow browser access.</li>
                             <li>Place the test tube inside the <strong>image capturing box</strong>.</li>
                             <li>Ensure the box lid is closed for consistent lighting.</li>
-                            <li>The <strong>dashed circle crosshair</strong> on the camera feed shows the sampling zone — center the test tube color within it.</li>
+                            <li>Stand the tube upright in the <strong>dashed guide</strong> at the centre of the box. The <strong>green strip</strong> shows the part of the liquid being measured — the middle of the tube, clear of the LED reflections on its edges. A <strong>yellow strip</strong> means no colored liquid was found and the centre of the frame is measured instead.</li>
                         </ul>
                     </div>
                     <div class="col-md-6">
@@ -1036,7 +1036,7 @@
                             <tr><td>Reagent volume</td><td>~1 mL</td><td>2nd scratch mark</td></tr>
                             <tr><td>Reaction timer</td><td>8 min total</td><td>1 min mix + 2 wait + 1 mix + 5 wait</td></tr>
                             <tr><td>Captures per test</td><td>3</td><td>Averaged via RGB mean</td></tr>
-                            <tr><td>Crosshair zone</td><td>70 × 70 px</td><td>Center of 320×240 camera frame</td></tr>
+                            <tr><td>Sampling zone</td><td>Middle 40 % of the detected tube</td><td>320×240 frame; brightest 5 % / darkest 3 % of pixels dropped (LED glare, specks)</td></tr>
                             <tr><td>Commercial fertilizer bag</td><td>50 kg</td><td>Standard Philippine bag size</td></tr>
                             <tr><td>BCG range</td><td>pH 4.0–5.8</td><td>Acidic soils</td></tr>
                             <tr><td>BTB range</td><td>pH 5.8–7.6</td><td>Near-neutral to neutral soils</td></tr>

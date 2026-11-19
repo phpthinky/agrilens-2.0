@@ -64,6 +64,11 @@
     }
 
     function isExternal(device) {
+        // Built-in check comes first: laptop cameras are often labelled
+        // e.g. "Integrated_Webcam_HD", which would also match "webcam".
+        if (BUILT_IN_LABEL.test(device.label)) {
+            return false;
+        }
         if (EXTERNAL_LABEL.test(device.label)) {
             return true;
         }

@@ -2,22 +2,13 @@
 
 namespace App\Services;
 
+use App\Exceptions\ColorChartMissingException;
 use App\Models\PhColorChart;
 
 class PhTestService
 {
     // Variance threshold: readings within 0.3 pH units = High confidence
     private const VARIANCE_THRESHOLD = 0.09; // (0.3)^2
-
-    /**
-     * Fixed paper chart pH values per indicator solution.
-     * These match the discrete color reference points printed on BSWM soil test kit cards.
-     */
-    public const CHART_POINTS = [
-        'CPR' => [4.8, 5.0, 5.2, 5.4, 5.6, 5.8, 6.0],
-        'BCG' => [4.0, 4.2, 4.4, 4.6, 4.8, 5.0, 5.2],
-        'BTB' => [6.0, 6.2, 6.4, 6.8, 7.2, 7.8],
-    ];
 
     /**
      * Snap a continuous scientific pH value to the nearest card point that is
@@ -29,12 +20,14 @@ class PhTestService
      *
      * If scientific pH exceeds every chart point (out-of-range high), the highest
      * chart point is returned (clamped). Chart points are loaded from the
-     * ph_color_charts DB table; falls back to CHART_POINTS constant if DB is empty.
+     * ph_color_charts DB table only — there is no built-in fallback.
      */
     public static function snapToChartPh(float $ph, string $solution): float
     {
-        $dbPoints = PhColorChart::chartPointsForIndicator($solution);
-        $points   = !empty($dbPoints) ? $dbPoints : (self::CHART_POINTS[strtoupper($solution)] ?? self::CHART_POINTS['CPR']);
+        $points = PhColorChart::chartPointsForIndicator($solution);
+        if (empty($points)) {
+            throw new ColorChartMissingException(strtoupper($solution) . ' pH');
+        }
 
         // Points are sorted ascending. Return the first point >= scientific pH.
         foreach ($points as $point) {

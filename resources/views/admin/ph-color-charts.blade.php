@@ -33,54 +33,25 @@
 
 <div class="row g-4">
 
-    {{-- ── Add New Entry ────────────────────────────────────────── --}}
+    {{-- ── Add entries: device calibration ─────────────────────── --}}
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-header bg-success text-white">
-                <i class="fa fa-plus me-1"></i> Add Color Entry
+                <i class="fa fa-eye-dropper me-1"></i> Add Colors
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.ph-color-charts.store') }}">
-                    @csrf
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Indicator</label>
-                        <select class="form-select" name="indicator" required>
-                            <option value="">— select —</option>
-                            @foreach(['CPR','BCG','BTB'] as $ind)
-                            <option value="{{ $ind }}" {{ old('indicator') === $ind ? 'selected' : '' }}>
-                                {{ $ind }}
-                                @if($ind === 'CPR') — Cresol Red + Phenolphthalein (Step 1)
-                                @elseif($ind === 'BCG') — Bromocresol Green (Step 2, acidic)
-                                @else — Bromothymol Blue (Step 2, near-neutral)
-                                @endif
-                            </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">pH Value</label>
-                        <input type="number" class="form-control" name="ph_value"
-                               value="{{ old('ph_value') }}" min="0" max="14" step="0.1"
-                               placeholder="e.g. 5.4" required>
-                        <div class="form-text">One decimal place (e.g. 5.0, 5.2, 6.8)</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Hex Color Value</label>
-                        <div class="input-group">
-                            <input type="color" class="form-control form-control-color" id="colorPicker"
-                                   value="{{ old('hex_value', '#FF8800') }}"
-                                   oninput="document.getElementById('hexInput').value = this.value.toUpperCase()">
-                            <input type="text" class="form-control font-monospace" id="hexInput"
-                                   name="hex_value" value="{{ old('hex_value', '#FF8800') }}"
-                                   placeholder="#RRGGBB" pattern="^#[0-9A-Fa-f]{6}$"
-                                   oninput="syncPicker(this.value)" required>
-                        </div>
-                        <div class="form-text">Measured from physical BSWM card under calibrated lighting.</div>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">
-                        <i class="fa fa-plus me-1"></i> Add Entry
-                    </button>
-                </form>
+                <p class="small text-muted">
+                    New reference colors are captured with the colorimeter box: put a reference solution in the box,
+                    capture it, and label it with its pH value.
+                </p>
+                <a href="{{ route('admin.color-calibration') }}" class="btn btn-success w-100">
+                    <i class="fa fa-video me-1"></i> Open Color Calibration
+                </a>
+                <p class="small text-muted mt-3 mb-0">
+                    <span class="badge bg-secondary">BSWM card</span> entries are the defaults read from the printed kit card;
+                    <span class="badge bg-success">Device</span> entries were captured with the box camera.
+                    The charts here are the only color source — a chart with no active entries stops that test.
+                </p>
             </div>
         </div>
     </div>
@@ -118,6 +89,7 @@
                                         <th>Swatch</th>
                                         <th>Hex</th>
                                         <th>pH Value</th>
+                                        <th>Source</th>
                                         <th class="text-center">Active</th>
                                         <th class="text-end">Actions</th>
                                     </tr>
@@ -130,6 +102,7 @@
                                         </td>
                                         <td class="font-monospace">{{ $entry->hex_value }}</td>
                                         <td><strong>{{ number_format($entry->ph_value, 1) }}</strong></td>
+                                        <td>@if($entry->source === 'device')<span class="badge bg-success">Device</span>@if($entry->snapshot) <img src="{{ asset($entry->snapshot) }}" width="40" height="30" class="ms-1 align-middle" style="border-radius:3px;border:1px solid #ccc;object-fit:cover;" data-preview="{{ asset($entry->snapshot) }}" data-caption="{{ $entry->indicator }} pH {{ number_format($entry->ph_value, 1) }} · {{ $entry->hex_value }}" title="Click to view the whole image">@endif @else<span class="badge bg-secondary">BSWM card</span>@endif</td>
                                         <td class="text-center">
                                             @if($entry->active)
                                                 <span class="badge bg-success">Active</span>
@@ -216,12 +189,6 @@
 
 @section('scripts')
 <script>
-function syncPicker(hexVal) {
-    if (/^#[0-9A-Fa-f]{6}$/.test(hexVal)) {
-        document.getElementById('colorPicker').value = hexVal;
-    }
-}
-
 function openDeleteModal(id, hex, indicator, ph) {
     document.getElementById('deleteForm').action = `/admin/ph-color-charts/${id}`;
     document.getElementById('modal-swatch').style.background = hex;

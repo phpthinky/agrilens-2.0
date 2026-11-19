@@ -288,6 +288,11 @@
                 <li class="sidebar-header">System Operations</li>
 
                 <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.color-calibration') ? 'active' : '' }}" href="{{ route('admin.color-calibration') }}">
+                            <i class="fa fa-eye-dropper me-2"></i> Color Calibration
+                        </a>
+                    </li>
+                <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.ph-color-charts') ? 'active' : '' }}" href="{{ route('admin.ph-color-charts') }}">
                             <i class="fa fa-palette me-2"></i> pH Color Charts
                         </a>
@@ -421,7 +426,8 @@
             });
         }, 5000);
     </script>
-    
+    <script src="{{ asset('js/image-preview.js') }}?v={{ filemtime(public_path('js/image-preview.js')) }}"></script>
+
     @yield('scripts')
 </body>
 </html>

@@ -16,7 +16,8 @@
     <div class="card mb-4">
         <div class="card-body text-center">
             @if($exists)
-                <a href="{{ asset('downloads/agrilens-field-technician-app.apk') }}" class="btn btn-success btn-lg px-4" download>
+                {{-- ?v= changes with every upload, so Hostinger's CDN can't hand out an older cached APK. --}}
+                <a href="{{ asset('downloads/agrilens-field-technician-app.apk') }}?v={{ filemtime(public_path('downloads/agrilens-field-technician-app.apk')) }}" class="btn btn-success btn-lg px-4" download>
                     <i class="fa fa-download me-2"></i>Download APK @if($sizeMb)({{ $sizeMb }} MB)@endif
                 </a>
                 <p class="text-muted small mt-2 mb-0">Android 7.0 (Nougat) or newer. Not available on the Play Store — this installs directly from this file.</p>

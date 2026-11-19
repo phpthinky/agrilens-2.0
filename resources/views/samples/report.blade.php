@@ -31,7 +31,7 @@
                 @if($sample->location)
                 <p class="mb-1"><strong>Farm Location:</strong> {{ $sample->location }}</p>
                 @endif
-                <p class="mb-1"><strong>Analysis Method:</strong> {{ ucfirst($sample->analysis_type ?? 'colorimetric') }}</p>
+                <p class="mb-1"><strong>Analysis Method:</strong> {{ $sample->analysisTypeLabel() }}</p>
                 @if($sample->analysis_type === 'probe')
                 <p class="mb-1"><strong>Probe ID:</strong> {{ $sample->probe_id }}</p>
                 @if($sample->probe_model)
