@@ -18,6 +18,15 @@ class SoilSample extends Model
         'fertility_score', 'ai_recommendation', 'gemini_crop_recommendation', 'recommended_crop',
         'tests_completed', 'analyzed_at',
         'analysis_type', 'soil_type', 'probe_id', 'probe_model', 'probe_raw_payload', 'notes',
+        'client_uuid',
+    ];
+
+    public const ANALYSIS_TYPE_LABELS = [
+        'pending'             => 'Pending',
+        'manual'              => 'Manual',
+        'colorimetric'        => 'Colorimetric',
+        'probe'               => 'Probe',
+        'mobile_colorimetric' => 'Mobile Colorimetric',
     ];
 
     protected function casts(): array
@@ -66,6 +75,14 @@ class SoilSample extends Model
     public function scopeColorimetric($query)
     {
         return $query->where('analysis_type', 'colorimetric');
+    }
+
+    /** Human-readable analysis method, e.g. "Mobile Colorimetric". */
+    public function analysisTypeLabel(): string
+    {
+        $type = $this->analysis_type ?? 'colorimetric';
+
+        return self::ANALYSIS_TYPE_LABELS[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }
 
     public function scopeProbe($query)

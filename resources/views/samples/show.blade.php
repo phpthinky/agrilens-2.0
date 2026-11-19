@@ -281,6 +281,55 @@ $fertilizerSvc = app(\App\Services\FertilizerService::class);
     @endforeach
 </div>
 
+{{-- CAPTURED PHOTOS (colorimetric: the webcam photo behind every reading) --}}
+@php
+$photoSteps = [];
+if ($phTest = $sample->phTest) {
+    $photoSteps['pH — Step 1 (CPR)'] = collect($phTest->step1_readings ?? [])->map(fn ($rd) => ['image' => $rd['image'] ?? null, 'hex' => $rd['hex'] ?? null, 'value' => $rd['computed_value'] ?? null]);
+    if (!empty($phTest->step2_readings)) {
+        $photoSteps["pH — Step 2 ({$phTest->step2_solution})"] = collect($phTest->step2_readings)->map(fn ($rd) => ['image' => $rd['image'] ?? null, 'hex' => $rd['hex'] ?? null, 'value' => $rd['computed_value'] ?? null]);
+    }
+}
+foreach (['nitrogen' => 'Nitrogen (N)', 'phosphorus' => 'Phosphorus (P)', 'potassium' => 'Potassium (K)'] as $param => $label) {
+    $photoSteps[$label] = collect($readings[$param] ?? [])->map(fn ($rd) => ['image' => $rd->captured_image, 'hex' => $rd->color_hex, 'value' => $rd->computed_value]);
+}
+$photoSteps = array_filter($photoSteps, fn ($list) => $list->contains(fn ($rd) => !empty($rd['image'])));
+@endphp
+@if(!empty($photoSteps))
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-camera me-2"></i>Captured Photos</span>
+        <small class="text-muted">{{ $sample->analysisTypeLabel() }} &middot; click a photo to enlarge</small>
+    </div>
+    <div class="card-body">
+        @foreach($photoSteps as $stepLabel => $list)
+        <div class="mb-3">
+            <div class="fw-semibold small mb-2">{{ $stepLabel }}</div>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach($list->values() as $i => $rd)
+                <div class="text-center" style="width:132px;">
+                    @if(!empty($rd['image']))
+                    <img src="{{ asset($rd['image']) }}" alt="{{ $stepLabel }} capture {{ $i + 1 }}"
+                         class="rounded border" style="width:132px;height:99px;object-fit:cover;"
+                         data-preview="{{ asset($rd['image']) }}" data-caption="{{ $stepLabel }} — capture {{ $i + 1 }}">
+                    @else
+                    <div class="rounded border bg-light d-flex align-items-center justify-content-center text-muted small" style="width:132px;height:99px;">No photo</div>
+                    @endif
+                    <div class="d-flex align-items-center justify-content-center gap-1 mt-1 small">
+                        @if($rd['hex'])
+                        <span style="display:inline-block;width:14px;height:14px;background:{{ $rd['hex'] }};border:1px solid #ccc;border-radius:3px;"></span>
+                        @endif
+                        <span class="text-muted">#{{ $i + 1 }}@if($rd['value'] !== null) &middot; {{ rtrim(rtrim(number_format((float) $rd['value'], 2), '0'), '.') }}@endif</span>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 {{-- FERTILIZER RECOMMENDATION --}}
 @if(!empty($fertRec))
 <div class="card mb-4">

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AssignmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ColorimetricController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\MobileColorimetricController;
 use App\Http\Controllers\Api\ScheduleAssignmentController;
 use App\Http\Controllers\Api\SoilAnalysisController;
 use App\Http\Controllers\Api\TaskController;
@@ -45,6 +46,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/samples/{sample}/colorimetric/{parameter}', [ColorimetricController::class, 'reset'])
         ->where('parameter', 'ph|nitrogen|phosphorus|potassium')
         ->name('api.colorimetric.reset');
+    // Mobile colorimetric: the app downloads the colour charts, reads the photos itself
+    // (offline), and uploads the finished test with its photos in one request.
+    Route::get('/colorimetric/config', [MobileColorimetricController::class, 'config'])->name('api.mobile-colorimetric.config');
+    Route::post('/farms/{farm}/mobile-colorimetric', [MobileColorimetricController::class, 'store'])->name('api.mobile-colorimetric.store');
     Route::post('/samples/{sample}/result-link', [ColorimetricController::class, 'resultLink'])->name('api.colorimetric.result-link');
 
     // Consolidated pending/completed task list for the mobile homepage.

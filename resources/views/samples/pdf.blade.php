@@ -90,7 +90,7 @@
     <span><strong>Date Received:</strong> {{ $sample->sample_date->format('F j, Y') }}</span>
     <span><strong>Date Tested:</strong> {{ $sample->date_tested->format('F j, Y') }}</span>
     @if($sample->analyzed_at)<span><strong>Analyzed:</strong> {{ $sample->analyzed_at->format('F j, Y g:i A') }}</span>@endif
-    <span><strong>Analysis Method:</strong> {{ ucfirst($sample->analysis_type ?? 'colorimetric') }}</span>
+    <span><strong>Analysis Method:</strong> {{ $sample->analysisTypeLabel() }}</span>
     @if(!is_null($sample->fertility_score))
     <span><strong>Fertility Score:</strong>
         <span class="badge badge-{{ $sample->fertilityColorClass() }}">{{ $sample->fertility_score }}%</span>

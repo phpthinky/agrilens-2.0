@@ -94,7 +94,7 @@
     <div class="card-body">
         @forelse($soilSamples as $sample)
             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                <span>{{ $sample->sample_date->format('M j, Y') }} <span class="badge bg-secondary ms-1">{{ ucfirst($sample->analysis_type ?? 'colorimetric') }}</span></span>
+                <span>{{ $sample->sample_date->format('M j, Y') }} <span class="badge bg-secondary ms-1">{{ $sample->analysisTypeLabel() }}</span></span>
                 @if(!is_null($sample->fertility_score))
                     <span class="badge bg-{{ $sample->fertilityColorClass() }}">{{ $sample->fertility_score }}%</span>
                 @endif
